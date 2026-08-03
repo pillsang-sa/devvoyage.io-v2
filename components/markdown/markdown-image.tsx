@@ -25,6 +25,9 @@ function intrinsicSize(src: string): { width: number; height: number } | undefin
 
 type Props = ComponentPropsWithoutRef<"img"> & { node?: unknown };
 
+// `node` is destructured only to keep react-markdown's hast node out of
+// `...rest`, which is spread onto the <img> below.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function MarkdownImage({ src, alt, node: _node, ...rest }: Props) {
   if (typeof src !== "string") return null;
 

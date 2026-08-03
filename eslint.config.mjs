@@ -5,16 +5,6 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  {
-    rules: {
-      // `_`-prefixed names are deliberately destructured only to drop them,
-      // e.g. react-markdown's `node` prop that must not reach the DOM.
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
-      ],
-    },
-  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

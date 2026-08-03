@@ -14,6 +14,10 @@ const prettyCodeOptions: PrettyCodeOptions = {
 const components: Components = {
   img: MarkdownImage,
 
+  // `node` is react-markdown's hast node. Destructuring it is what keeps it out
+  // of `...rest`; drop the binding and it reaches the DOM as
+  // node="[object Object]". Unused by design, hence the disable.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   a({ href, children, node: _node, ...rest }) {
     if (typeof href !== "string") return <>{children}</>;
 
@@ -34,6 +38,7 @@ const components: Components = {
 
   // Wide tables must scroll inside their own container rather than pushing the
   // page sideways on narrow screens.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- see `a` above
   table({ children, node: _node, ...rest }) {
     return (
       <div className="my-8 overflow-x-auto">
