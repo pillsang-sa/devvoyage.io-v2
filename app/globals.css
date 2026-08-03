@@ -1,26 +1,146 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
-:root {
+/* The theme is driven by an explicit attribute on <html> (set before first
+   paint by the inline script in the root layout), not by a media query, so the
+   toggle can override the OS preference. Rewire Tailwind's `dark:` variant to
+   match. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root,
+[data-theme="light"] {
   --background: #ffffff;
   --foreground: #171717;
+  --muted: #5f6368;
+  --subtle: #f3f4f6;
+  --border: #e5e7eb;
+  --accent: #2563eb;
+  --code-bg: #f6f8fa;
+}
+
+[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --muted: #9ca3af;
+  --subtle: #1c1c1f;
+  --border: #272729;
+  --accent: #7aa2f7;
+  --code-bg: #16181d;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ---------------------------------------------------------------------------
+   Article typography
+   --------------------------------------------------------------------------- */
+
+.prose {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-links: var(--accent);
+  --tw-prose-quotes: var(--muted);
+  --tw-prose-quote-borders: var(--border);
+  --tw-prose-captions: var(--muted);
+  --tw-prose-hr: var(--border);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+  --tw-prose-code: var(--foreground);
+  --tw-prose-counters: var(--muted);
+  --tw-prose-bullets: var(--border);
+}
+
+/* Long words and URLs must not widen the page on narrow screens. */
+.prose :where(p, li, h1, h2, h3, h4) {
+  overflow-wrap: break-word;
+}
+
+/* ---------------------------------------------------------------------------
+   Code blocks (rehype-pretty-code + Shiki)
+   --------------------------------------------------------------------------- */
+
+.prose pre {
+  background-color: var(--code-bg);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+}
+
+@media (min-width: 768px) {
+  .prose pre {
+    font-size: 0.875rem;
+  }
+}
+
+.prose pre code {
+  display: grid; /* one row per line, so lines can be highlighted individually */
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Inline code: Tailwind Typography wraps it in backticks by default. */
+.prose :not(pre) > code {
+  background-color: var(--subtle);
+  border: 1px solid var(--border);
+  border-radius: 0.3rem;
+  padding: 0.125rem 0.35rem;
+  font-weight: 500;
+  font-size: 0.875em;
+}
+
+.prose :not(pre) > code::before,
+.prose :not(pre) > code::after {
+  content: none;
+}
+
+/* rehype-pretty-code emits both themes at once: the resolved colour is inline
+   and the alternative lives in `--shiki-dark`. The `data-theme` attribute it
+   writes onto <code> holds the theme *names* ("github-light github-dark-dimmed"),
+   so it never collides with the "dark"/"light" value on <html>. */
+code[data-theme*=" "],
+code[data-theme*=" "] span {
+  color: var(--shiki-light);
+}
+
+[data-theme="dark"] code[data-theme*=" "],
+[data-theme="dark"] code[data-theme*=" "] span {
+  color: var(--shiki-dark);
+}
+
+/* Code block filename, when written as ```ts title="foo.ts" */
+.prose figure[data-rehype-pretty-code-figure] {
+  margin-block: 2rem;
+}
+
+.prose [data-rehype-pretty-code-title] {
+  background-color: var(--subtle);
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: 0.5rem 0.5rem 0 0;
+  padding: 0.5rem 1rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.prose [data-rehype-pretty-code-title] + pre {
+  margin-top: 0;
+  border-radius: 0 0 0.5rem 0.5rem;
 }
