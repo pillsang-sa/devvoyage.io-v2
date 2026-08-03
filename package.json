@@ -4,9 +4,9 @@
   "private": true,
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 8080",
     "build": "next build",
-    "preview": "npx --yes serve out",
+    "preview": "npx --yes serve out -l 8080",
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint"
   },
