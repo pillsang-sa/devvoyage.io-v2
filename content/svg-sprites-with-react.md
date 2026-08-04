@@ -1,22 +1,21 @@
 ---
 title: Using SVG sprites with React
-summary: SVG 아이콘을 sprites해서 React 컴포넌트로 사용해보자!
+summary: 아이콘마다 컴포넌트를 만드는 대신 하나의 스프라이트 SVG로 합치고, use로 필요한 것만 꺼내 쓰는 Icon 컴포넌트를 만들었습니다.
 publishedAt: 2025-01-18
 updatedAt: 2025-01-19
 ---
 
-## TL;DR
+React에서 SVG를 다룰 때 주로 SVGR로 아이콘 하나하나를 컴포넌트로 바꿔 썼습니다. 편하긴 한데, 아이콘이 늘어날수록 번들에 같은 형태의 컴포넌트가 계속 쌓이고 브라우저 캐싱이 제대로 걸리지 않을 때 리소스가 낭비됐습니다.
 
-React 개발 시 SVG 파일들을 다룰 때 주로 SVGR 라이브러리를 활용해 컴포넌트로 만들어 사용했습니다.
-하지만 브라우저 캐싱이 제대로 작동하지 않을 때 리소스가 불필요하게 소모되는 현상을 발견했습니다.
-이 문제를 해결하기 위해 MDN 문서를 찾아보고 네이버의 구현 방식을 살펴보면서 좋은 아이디어를 얻을 수 있었습니다.
+다른 방법을 찾다가 네이버가 쓰는 방식을 보게 됐습니다. 서비스 아이콘 전체가 한 장의 이미지에 들어 있습니다.
 
 ![네이버가 서비스 아이콘 전체를 한 장으로 합쳐둔 스프라이트 시트](/images/svg-sprites-with-react/naver-svg-sprites.png)
 
+낱개로 요청하면 수십 번 왕복해야 할 것을 한 번에 받아옵니다. SVG에도 같은 개념이 있습니다.
+
 ## `<use>`
 
-SVG `<use>` 엘리먼트는 SVG 컨텐츠를 재사용할 수 있게 해주는 요소입니다.
-이미 정의된 SVG 요소를 다른 위치에서 참조하여 재사용할 수 있게 해줍니다.
+`<use>`는 이미 정의된 SVG 요소를 다른 위치에서 참조해 재사용하는 요소입니다.
 
 ```html
 <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
@@ -29,15 +28,11 @@ SVG `<use>` 엘리먼트는 SVG 컨텐츠를 재사용할 수 있게 해주는 �
 </svg>
 ```
 
-## Sprites
+원을 한 번만 정의해 두고 `href`로 id를 가리키면 됩니다. 이걸 아이콘에 적용하면, 여러 아이콘을 하나의 SVG 파일에 모아두고 필요한 것만 골라 쓸 수 있습니다.
 
-SVG `<use>` 태그를 활용하면 여러 아이콘을 하나의 SVG 파일에 모아두고, 필요한 아이콘만 골라서 사용할 수 있습니다.
+## 스프라이트 만들기
 
-이 방식을 테스트해보기 위해 [디자인 리소스](https://www.figma.com/community/file/1042482994486402696)에서 몇 가지 아이콘을 가져와 시험해보았습니다.
-
-다만 아이콘이 많아지면 수작업으로 관리하기가 어려워집니다. 이를 해결하기 위해 개별 SVG 파일에서 필요한 정보를 추출하고 하나의 스프라이트 파일로 자동 병합하는 스크립트가 필요합니다.
-스프라이트 SVG 안에서는 각 아이콘을 구분하기 위해 고유한 id가 필요하므로, 먼저 의미 있는 파일명을 지정해주어야 합니다.
-또한 아이콘 색상을 외부에서 지정할 수 있도록 path 등 요소의 fill 속성값으로 currentColor를 설정합니다. 구체적인 예시는 아래와 같습니다.
+아이콘 하나하나를 준비할 때 두 가지만 지키면 됩니다. 파일명이 곧 id가 되므로 의미 있는 이름을 붙이고, 색을 바깥에서 지정할 수 있도록 `fill`을 `currentColor`로 둡니다.
 
 ```html
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -45,9 +40,7 @@ SVG `<use>` 태그를 활용하면 여러 아이콘을 하나의 SVG 파일에 �
 </svg>
 ```
 
-SVG 스프라이트를 생성하는 전체 스크립트는 [여기](https://github.com/pillomon/react-svg-sprites/blob/main/sprites.ts)에서 확인하실 수 있습니다.
-스크립트의 핵심 동작을 살펴보면, 먼저 지정된 폴더에서 모든 SVG 파일을 읽어옵니다. 그다음 각 SVG 파일에 대해 `<symbol>` 요소를 생성하는데, 이때 파일명을 id로 사용하고 원본 SVG의 내용을 자식 요소로 포함시킵니다.
-마지막으로 이렇게 만들어진 모든 `<symbol>` 요소들을 하나의 SVG 파일로 통합하면 스프라이트 생성이 완료됩니다.
+아이콘이 많아지면 손으로 합치기 어려우니 스크립트로 자동화합니다. 하는 일은 단순합니다. 폴더에서 SVG를 모두 읽고, 각 파일의 `<svg>` 태그를 `<symbol>`로 바꾸고, 파일명을 id로 달아 하나의 파일에 모읍니다. `width`, `height`, `xmlns` 같은 개별 속성은 스프라이트 안에서는 의미가 없으므로 제거합니다.
 
 ```ts
 /**
@@ -102,9 +95,11 @@ async function generateSprite({
 }
 ```
 
+전체 스크립트는 [react-svg-sprites](https://github.com/pillomon/react-svg-sprites/blob/main/sprites.ts)에 있습니다.
+
 ## Icon 컴포넌트
 
-tailwindcss와 cva를 사용해서 간단한 React 컴포넌트를 만들었습니다. 컴포넌트의 인터페이스로 SVG의 기본 속성을 포함하고 있으며 이외에는 아이콘의 이름과 컬러 그리고 사이즈를 인터페이스로 받습니다.
+이제 감싸기만 하면 됩니다. `<svg>` 기본 속성을 그대로 받고, 거기에 아이콘 이름·색·크기를 더한 인터페이스입니다.
 
 ```tsx
 import type { VariantProps } from 'class-variance-authority';
@@ -132,7 +127,9 @@ export default function Icon({ name, color, size, ...rest }: IconProps) {
 }
 ```
 
-cva를 사용해서 type-safe한 UI 개발 및 유지보수가 가능하게 구현했습니다.
+`href`를 슬래시로 시작하게 두는 편이 안전합니다. 상대 경로로 두면 현재 라우트를 기준으로 해석돼 중첩된 경로에서 아이콘이 사라집니다.
+
+크기와 색은 cva로 정의했습니다. 아이콘 색이 `currentColor`이므로 텍스트 색만 바꾸면 아이콘 색이 따라옵니다.
 
 ```ts
 import { cva } from "class-variance-authority";
@@ -160,16 +157,15 @@ export const iconStyles = cva(["transition-all", "stroke-[0px]"], {
 });
 ```
 
-아주 간단하지만 적당한 인터페이스 정책과 type-safe하면서 스타일 유지보수에도 강점을 가지고있는 Icon 컴포넌트가 만들어졌습니다.
+`IconName`을 스프라이트에서 생성한 id 목록으로 두면 존재하지 않는 아이콘 이름은 타입 단계에서 걸립니다. 크기와 색도 마찬가지라, 정해둔 값 밖으로 나가는 순간 컴파일이 막힙니다.
 
-## Conclusion
+## 다음은
 
-이 컴포넌트를 실제 프로젝트에 적용해본 결과, 여러 아이콘을 하나의 SVG 파일로 관리할 수 있어 리소스 효율성이 크게 향상되었습니다.
-앞으로는 TL;DR에서 보여드린 이미지처럼, 디자인파트과 협력하여 모든 아이콘을 하나의 이미지로 통합하고 CSS 좌표 방식으로 개별 아이콘을 불러오는 방식도 시도해보고 싶습니다.
+실제 프로젝트에 적용해 보니 아이콘을 한 파일로 관리하게 된 것만으로도 리소스 측면에서 이득이 있었습니다. 다음에는 네이버가 하는 것처럼 아이콘을 아예 한 장의 래스터 이미지로 합치고 CSS 좌표로 잘라 쓰는 방식도 시도해 보고 싶습니다.
 
 ![background-position으로 스프라이트에서 아이콘 한 칸만 잘라내는 CSS](/images/svg-sprites-with-react/naver-css.png)
 
-## References
+`background-position`으로 시트 안의 좌표를 지정해 아이콘 한 칸만 드러내는 방식입니다. 요청 수를 더 줄일 수 있지만, 좌표를 관리해야 하니 디자인 쪽과 규칙을 맞춰두는 게 먼저겠습니다.
 
 - [SVGR](https://react-svgr.com)
 - [react-svg-sprites](https://github.com/pillomon/react-svg-sprites)

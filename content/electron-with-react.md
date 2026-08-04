@@ -1,20 +1,16 @@
 ---
 title: Electron with React
-summary: React 앱으로 데스크톱 앱을 쉽게 만들 수 있다면?
+summary: 사내 윈도우 앱을 React + Electron으로 만들면서 정리한 것들. 두 프로세스가 어떻게 나뉘고, contextBridge로 무엇을 얼마나 열어줄지.
 publishedAt: 2024-11-19
 ---
 
-## TL;DR
+사내에서 윈도우 데스크톱 앱 요청이 들어와 맡게 됐습니다. 기능이 많지는 않았지만 React + Electron 조합을 처음 써보면서 정리한 내용입니다.
 
-최근 사내부서에서 윈도우 데스크톱 제작 요청을 주었고 운이 좋게 개발을 맡게되었습니다. 기능이 많지는 않지만 React + Electron으로 윈도우 프로그램을 만들면서 알게된 몇가지 내용을 공유해보겠습니다.
+Electron은 Chromium과 Node.js를 바이너리에 함께 넣어, JavaScript·HTML·CSS로 만든 화면을 데스크톱 앱으로 돌립니다. 하나의 코드베이스로 Windows·macOS·Linux를 모두 지원하는 원리가 여기 있습니다.
 
-## What is Electron?
+중요한 건 이 구조 때문에 **프로세스가 둘로 나뉜다**는 점입니다. Chromium이 화면을 그리는 Renderer Process가 있고, Node.js API를 쓸 수 있는 Main Process가 따로 있습니다. React 코드는 Renderer에서 돌아가며, 파일 시스템 같은 걸 건드리려면 Main에 부탁해야 합니다. 이 글의 절반은 그 부탁을 어떻게 주고받는지에 관한 이야기입니다.
 
-> Electron is a framework for building desktop applications using JavaScript, HTML, and CSS. By embedding [Chromium](https://www.chromium.org/) and [Node.js](https://nodejs.org/) into its binary, Electron allows you to maintain one JavaScript codebase and create cross-platform apps that work on Windows, macOS, and Linux — no native development experience required.
-
-공식 홈페이지에서 발췌한 글로 Electron은 Javascript, HTML, CSS를 사용해서 데스크톱 애플리케이션을 구축할 수 있고, 바이너리에 Chromium, Node.js를 내장하고 있다는 것이 크로스 플랫폼이 지원되는 원리입니다.
-
-## 프로젝트 구축
+## 프로젝트 세팅
 
 ```bash
 # vite-react-typescript 프로젝트 시작
@@ -24,7 +20,7 @@ pnpm create vite first-electron --template react-ts
 pnpm add -D electron electron-builder wait-on concurrently
 ```
 
-## 어떻게 빌드되는가?
+## 개발과 빌드를 나누는 스크립트
 
 ```json
 "scripts": {
@@ -39,11 +35,13 @@ pnpm add -D electron electron-builder wait-on concurrently
 "main": "./public/main.cjs",
 ```
 
-- ⭐️ `pnpm electron:dev` `pnpm electron:build`
-- `pnpm electron:dev`는 개발환경에서 사용하며, React 앱을 실행시킨 후 wait-on을 사용하여 local 서비스가 사용가능할때 까지 기다립니다. 이후 localhost:5173이 사용가능하다면 일렉트론을 실행시킵니다.
-- `pnpm electron:build`는 `pnpm electron:package`를 실행시켜 typescript와 vite 빌드를 순차적으로 진행합니다. 이후 electron-builder 패키지를 사용하여 target os 및 build config를 적용하여 electron build를 진행합니다.
-- main의 경로 설정도 매우 중요합니다. electron 애플리케이션의 진입점을 지정하는 역할을 하기에 정확한 경로 설정이 중요합니다.
-- 빌드할 때 사용한 electron-builder.json의 내부입니다. 중요한 files와 win 필드에 대해서는 하단에 별도로 정리해보았습니다.
+`electron:dev`는 Vite 개발 서버와 Electron을 동시에 띄웁니다. 그냥 동시에 실행하면 Electron이 아직 뜨지 않은 `localhost:5173`을 열려다 실패하므로, `wait-on`으로 서버가 응답할 때까지 기다린 뒤 실행합니다.
+
+`electron:build`는 TypeScript와 Vite 빌드를 먼저 돌리고, 그 산출물을 electron-builder에 넘겨 설치 파일을 만듭니다.
+
+`main` 필드도 중요합니다. Electron 앱의 진입점이라 경로가 틀리면 아무것도 뜨지 않습니다.
+
+## electron-builder.json
 
 ```jsonc
 {
@@ -80,18 +78,18 @@ pnpm add -D electron electron-builder wait-on concurrently
     // true로 설정하여 시작 메뉴 바로가기 생성
     "createStartMenuShortcut": true,
     // 바로가기의 이름
-    "shortcutName": "AdsKit Commander",
+    "shortcutName": "First Electron",
     // 제거 시 앱 데이터도 함께 삭제
     "deleteAppDataOnUninstall": true
   }
 }
 ```
 
-- win필드는 windows 빌드 관련 세부설정을 정의합니다.
-  - target: 패키지 타입과 아키텍처를 지정합니다. 위에서는 Installer 형태의 패키지에 64비트 시스템을 지원하게 명시되어 있습니다. 이외에도 대표적인 패키지 타입에 nsis-web, portable이 있으며, 아키텍처에는 ia32(32비트), arm64(ARM 기반) 등이 있습니다.
-  - icon: windows 탐색기, 작업 표시줄 등에 표시될 아이콘의 경로를 입력합니다.
+`win.target`은 패키지 타입과 아키텍처를 정합니다. 위에서는 인스톨러 형태(`nsis`)에 64비트를 지정했습니다. 이 밖에 `nsis-web`이나 `portable` 같은 타입, `ia32`나 `arm64` 같은 아키텍처를 쓸 수 있습니다. `icon`은 탐색기와 작업 표시줄에 표시될 아이콘입니다.
 
-## main.cjs에는 무엇이 있을까?
+## main.cjs
+
+Main Process의 진입점입니다. 창을 만들고, 개발/프로덕션에 따라 다른 것을 로드하고, 앱 생명주기를 다룹니다.
 
 ```js
 const { Menu, BrowserWindow, app } = require('electron');
@@ -171,11 +169,11 @@ app.on('window-all-closed', () => {
 });
 ```
 
-## Renderer(React) Process와의 통신은 어떻게?
+`webPreferences`의 네 줄이 이 앱의 보안 자세를 결정합니다. `nodeIntegration: false`와 `contextIsolation: true`로 Renderer에서 Node.js API에 직접 손대지 못하게 막고, 대신 `preload` 스크립트를 통해 **필요한 것만 골라서** 열어줍니다.
 
-![Main Process와 Renderer Process 사이의 통신 — invoke는 양방향, on은 단방향](/images/electron-with-react/ipc-process.png)
+## 두 프로세스를 잇는 preload
 
-위에서 보았던 preload.cjs 내부를 같이보면,
+preload 스크립트는 Renderer와 같은 창에 붙지만 Node.js API에 접근할 수 있는 특별한 자리입니다. 여기서 `contextBridge`로 원하는 함수만 `window`에 노출합니다.
 
 ```js
 const { contextBridge, ipcRenderer } = require('electron');
@@ -186,15 +184,18 @@ contextBridge.exposeInMainWorld('electron', {
 });
 ```
 
-임시로 **invokePing**과 **onPing**을 만들어두었습니다.
+`exposeInMainWorld`의 첫 인자가 `window`에 붙을 이름, 두 번째가 노출할 API 묶음입니다. 여기서는 `window.electron.invokePing`처럼 쓰게 됩니다. Renderer는 `ipcRenderer` 자체에는 접근할 수 없고, 오직 이 두 함수만 쓸 수 있습니다.
 
-- **contextBridge**: 서로 다른 context를 가진 process(Main, Renderer) 사이의 다리 역할을 하는 API입니다.
-- **exposeInMainWorld**: contextBridge의 메서드로 Renderer Process의 전역 스코프(window 객체)에 안전하게 API를 노출하는 역할을 합니다. 첫번째 인자는 window 객체에 노출될 속성 이름, 두번째 인자는 노출한 API들을 담은 객체입니다.
-- **ipcRenderer**: Renderer Process에서 Main Process와 통신하기 위한 모듈입니다.
-  - **invoke**: Promise 기반의 비동기 통신이며, 요청-응답 패턴을 가지고 있습니다. 채널명과 handler에서 사용할 message를 인자로 받습니다.
-  - **on**: 응답이 없으며, 이벤트 리스너 패턴을 가지고 있습니다. 모니터링 용도로 주로 사용됩니다. 채널명과 리스너를 인자로 받습니다.
+`ipcRenderer`가 제공하는 통신 방식은 두 가지입니다.
 
-contextBridge.exposeInMainWorld 메서드를 사용해서 invokePing과 onPing을 window 전역객체에 노출하였습니다. 하지만 typescript 상에서는 두 api에 대해서 타입 추론이 되지 않아 아래와 같이 새로 선언을 해주어야 타입 안정성이 높아집니다. 저의 경우 global.d.ts 파일을 생성하여 내부에 선언하였습니다.
+| | 패턴 | 인자 |
+| --- | --- | --- |
+| `invoke` | Promise 기반 요청-응답 | 채널명, 보낼 메시지 |
+| `on` | 응답 없는 이벤트 구독 | 채널명, 리스너 |
+
+`invoke`는 값을 돌려받아야 할 때, `on`은 Main 쪽 상태를 계속 지켜봐야 할 때 씁니다.
+
+TypeScript는 `contextBridge`로 붙인 것들을 알 수 없으므로 직접 선언해 줘야 합니다. `global.d.ts`를 만들어 넣었습니다.
 
 ```ts
 export {};
@@ -209,7 +210,7 @@ declare global {
 }
 ```
 
-컴포넌트 내부에서 Main Process에 접근하여 Node.js API 사용이 가능합니다.
+이제 컴포넌트에서 평범한 함수처럼 부르면 됩니다.
 
 ```tsx
 export default function Button() {
@@ -224,7 +225,9 @@ export default function Button() {
 }
 ```
 
-이제 "Received: ping"을 리턴하는 핸들러 구현이 필요합니다. 위의 ipcRenderer가 통신하기 위한 모듈이었다면, 통신을 처리하는 ipcMain 모듈을 사용해서 Renderer Process에서 온 요청을 처리해야 합니다.
+## 요청을 받는 쪽
+
+`ipcRenderer`가 보내는 쪽이라면 `ipcMain`이 받는 쪽입니다. 채널명만 맞춰주면 됩니다.
 
 ```js
 ipcMain.handle('invoke-ping', (event, message) => {
@@ -237,15 +240,9 @@ ipcMain.handle('invoke-ping', (event, message) => {
 });
 ```
 
-처리할 handle에서도 ipcRenderer에서 인자로 입력했던 채널명과 동일하게 입력해준 뒤, 처리할 로직을 구현하면 되겠습니다. ipcRenderer를 `app.whenReady().then()` 내부에서 선언할수도 있겠지만 모듈화를 위해 저는 ipcRenderer.cjs라는 파일로 분리했고 또 handle 내부의 로직은 기능에 맞게 별도의 파일 로직으로 분류하여 사용 했습니다. event 객체는 공식 문서에 의하면 보안 검증, 창 관리, 요청 출처 확인 등 다양한 용도로 사용되나 저의 경우 필요가 없어 사용하지 않았습니다.
+`app.whenReady().then()` 안에 넣어도 되지만, 저는 `ipcHandler.cjs`로 분리하고 핸들러 내부 로직도 기능별로 다시 나눴습니다. 첫 인자인 `event` 객체는 보안 검증이나 요청 출처 확인에 쓸 수 있는데, 이번에는 필요가 없어 쓰지 않았습니다.
 
-위의 설정이 통신을 위한 가장 컴팩트한 설정이라고 생각하며, 한번 따라해보시길 추천드립니다.
+여기까지가 통신을 붙이는 최소 구성입니다. 아직 코드 서명을 하지 못해 비공식 경로로 배포하고 있는데, 정식 배포까지 마무리해 보고 싶습니다. 웹만 하다가 프로세스 경계를 신경 쓰며 개발하는 경험이 꽤 새로웠습니다.
 
-## Conclusion
-
-아직 코드서명 단계까지 진행하지 못해 비공식 경로로 배포를 하고 있는데, 코드서명까지 완료하여 정식 배포까지 완료해보고 싶습니다. 또한 말로만 듣던 Electron을 자주 사용하는 React와 접목해서 프로젝트를 개발한 경험은 기존의 웹 개발과 다른점이 많아 리프레시되는 좋은 경험 및 새로운 지식을 배울 수 있어 개발 경험이 좋았습니다. 이 글을 보고 작게나마 도움이 되셨으면 좋겠습니다.
-
-## References
-
-- [Build cross-platform desktop apps with JavaScript, HTML, and CSS](https://www.electronjs.org/)
+- [Electron](https://www.electronjs.org/)
 - [electron-builder](https://www.electron.build/)

@@ -1,36 +1,32 @@
 ---
 title: Dockerfile in Next.js
-summary: Docker를 이용하여 Next.js 이미지를 생성하는 방법을 공유합니다.
+summary: Vercel이 제공하는 Next.js Dockerfile 샘플을 한 스테이지씩 뜯어 읽었습니다. 왜 네 단계로 나뉘어 있고, 각 단계가 무엇을 남기는지.
 publishedAt: 2024-05-20
 ---
 
-## TL;DR
+development, staging, production의 환경 차이 때문에 고생해 본 경험은 대부분 있을 겁니다. Docker로 Next.js 이미지를 만들어 두면 그 차이가 사라집니다. 여기서는 [Vercel이 제공하는 Dockerfile 샘플](https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile)을 기준으로, 각 스테이지가 무엇을 하는지 읽어보겠습니다.
 
-비단 프론트엔드 뿐만이 아니더라도 development, staging, live(production) 환경이 달라 문제를 겪었던 경험은 개발자라면 한 번쯤은 있을 거라고 생각합니다. 이런 문제를 해결할 방법 중 Docker를 사용해 Next.js 이미지를 생성하고 Docker 컨테이너를 실행하는 방법에 대해 다뤄보려 합니다. Vercel에서 제공하는 Next.js의 Dockerfile 샘플을 가지고 설명을 하겠습니다.
+이 파일은 multi-stage build로 작성돼 있습니다. 빌드 과정을 여러 단계로 쪼개고 마지막 단계에는 **실행에 필요한 것만** 남기는 방식입니다. 빌드 도구나 중간 산출물이 최종 이미지에 딸려오지 않아 크기가 확 줄고, 각 단계가 레이어 캐시를 따로 가져가므로 변경되지 않은 단계는 다시 빌드하지 않습니다.
 
-[Next.js Dockerfile sample by Vercel](https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile)
+| 스테이지 | 하는 일 | 다음 단계에 넘기는 것 |
+| --- | --- | --- |
+| base | 기본 이미지와 공통 설정 | 이미지 자체 |
+| deps | 의존성 설치 | `node_modules` |
+| builder | Next.js 빌드 | `.next` 산출물 |
+| runner | 서버 실행 | — |
 
-## Multi-stage란?
-
-제공된 Dockerfile은 multi-stage로 구성되어있으며, multi-stage build를 사용하며 아래와 같은 장점이 있습니다.
-
-- 최종 이미지에 필요한 파일만 포함할 수 있습니다. 빌드 중 생성된 임시 파일이나 개발 도구는 최종 이미지에 포함되지 않으므로 이미지 크기를 크게 줄일 수 있습니다.
-- 빌드 프로세스를 여러 단계로 나눌 수 있어 각 단계에서 필요한 도구와 환경을 분리할 수 있습니다. 이를 통해 빌드 속도를 최적화하고 관리하기 쉽게 만듭니다.
-- 다양한 빌드 환경을 손쉽게 관리할 수 있습니다. 예를 들어, 테스트와 프로덕션 환경을 별도로 구성하고 각 환경에 맞는 최적의 설정을 적용할 수 있습니다.
-- Docker는 각 빌드 단계마다 캐시를 활용하므로, 변경되지 않은 단계는 다시 빌드하지 않습니다. 이를 통해 빌드 시간을 단축할 수 있습니다.
-
-## Base stage
+## base
 
 ```dockerfile
 FROM node:18-alpine AS base
 RUN corepack enable
 ```
 
-node:18-alpine는 기본 이미지로서 [Docker Hub](https://hub.docker.com)를 통해 본인에게 더 적합한 기본 이미지를 찾을 수 있습니다. 위 이미지는 nodejs 18버전을 사용합니다. alpine은 linux를 경량화하여 배포한 이미지로 보안에 특화되었고 불필요한 package와 daemon이 없으며 패키지 관리자로 apk를 사용합니다.
+`node:18-alpine`은 Node.js 18을 담은 경량 리눅스 이미지입니다. alpine은 불필요한 패키지와 데몬이 없어 가볍고, 패키지 관리자로 `apk`를 씁니다. 다른 버전이 필요하면 [Docker Hub](https://hub.docker.com)에서 골라 쓰면 됩니다.
 
-그리고 base stage에서 corepack을 enable 하면 base를 기반으로 한 stage에서 pnpm을 사용할때마다 corepack enable pnpm과 같은 명령어를 사용하지 않아도 됩니다.
+여기서 `corepack enable`을 해두면 이 이미지를 상속하는 모든 스테이지에서 pnpm을 바로 쓸 수 있습니다.
 
-## Deps stage
+## deps
 
 ```dockerfile
 # Install dependencies only when needed
@@ -49,13 +45,11 @@ RUN \
   fi
 ```
 
-deps stage로 base 이미지를 그대로 가져와 사용합니다.
+alpine은 musl libc를 쓰는데 대부분의 네이티브 라이브러리는 glibc를 전제로 빌드돼 있습니다. `libc6-compat`이 그 간극을 메웁니다.
 
-alpine 이미지는 musl libc 라이브러리를 사용합니다. 하지만 대부분의 라이브러리는 glibc로 작성되어 glibc와의 호환성을 위해 libc6-compat 패키지를 설치합니다.
+lock 파일만 먼저 복사하는 게 포인트입니다. 소스 코드는 자주 바뀌지만 의존성은 그렇지 않으므로, 이 레이어는 lock 파일이 바뀌지 않는 한 캐시에서 재사용됩니다.
 
-WORKDIR 명령어로 /app 디렉터리를 작업 디렉터리로 설정해 준 뒤, 현재 프로젝트의 lock 파일을 가져와 종속된 패키지들을 설치합니다. 예제 Dockerfile은 yarn, npm, pnpm 3가지의 패키지 매니저에 대해 모두 작성되어있어 현재 프로젝트에서 사용하는 패키지 매니저와 관련없는 명령어는 덜어내고 사용가능합니다. 저는 pnpm을 사용하였는데 lock file이 업데이트 되지 않게 --frozen-lockfile 옵션을 추가했습니다.
-
-또한 저는 sharp(이미지 최적화 패키지)를 linux 플랫폼과 호환되게 해당 stage에서 pnpm add를 통해 설치하였습니다.
+샘플은 yarn·npm·pnpm 세 가지를 모두 분기 처리해 두었으니 쓰는 것만 남기면 됩니다. 저는 pnpm을 쓰면서 lock 파일이 갱신되지 않도록 `--frozen-lockfile`을 붙였고, 이미지 최적화에 쓰는 `sharp`를 리눅스 플랫폼에 맞게 이 단계에서 같이 설치했습니다.
 
 ```dockerfile
 RUN \
@@ -64,7 +58,7 @@ RUN \
   fi
 ```
 
-## Builder stage
+## builder
 
 ```dockerfile
 # Rebuild the source code only when needed
@@ -86,15 +80,11 @@ RUN \
   fi
 ```
 
-builder stage로 deps와 동일하게 base 이미지를 그대로 가져와 사용합니다.
+`COPY --from=deps`로 앞 단계가 만든 `node_modules`를 가져온 뒤, 프로젝트 파일을 복사합니다.
 
-WORKDIR을 /app으로 지정한 후 COPY 명령어를 사용해 deps stage에서 종속성 패키지 설치의 결과인 node_modules를 현재 경로의 /node_modules 내부로 복사하고 바로 다음 명령어로 COPY를 사용하여 프로젝트의 모든 파일을 복사합니다.
+`COPY . .` 하나면 될 것 같지만 두 줄로 나눈 데는 이유가 있습니다. Docker는 명령어마다 레이어를 만들고 변경이 없으면 캐시를 씁니다. 의존성 복사와 소스 복사를 분리해 두면, 소스만 고쳤을 때 앞 레이어는 그대로 재사용됩니다.
 
-두번째 COPY만 사용해도 될것 같지만, Docker는 각 명령어마다 레이어를 생성하는데 이때 레이어가 변경되지 않으면, 캐시를 사용합니다. 효율적인 캐시 관리를 위해서 두개의 명령어로 나누어 사용합니다.
-
-COPY를 완료한 뒤 RUN 명령어를 사용해 Next.js 프로젝트 build를 진행합니다. 종속성 패키지 설치와 동일하게 불필요한 명령어는 덜어내고 사용이 가능합니다.
-
-## Runner stage
+## runner
 
 ```dockerfile
 # Production image, copy all the files and run next
@@ -129,19 +119,10 @@ ENV PORT 3000
 CMD HOSTNAME="0.0.0.0" node server.js
 ```
 
-runner stage는 매우 간단합니다. 기존 stage에서 생성된 데이터 중 필요한 데이터를 가져와 서비스를 실행시키는 역할을 하고 있습니다.
-base 이미지를 그대로 가져오고 /app을 작업 디렉터리로 지정합니다. production 값을 가진 NODE_ENV라는 환경변수를 생성합니다.
-이후 id 1001 nodejs라는 시스템 user 그룹과 nextjs라는 시스템 user를 생성합니다. builder stage에서 public 폴더의 자료도 복사를 해줍니다.
-이후 프로그램이 실행될 .next 디렉터리를 생성한 후 디렉터리의 owner로 nextjs user와 nodejs userGroup을 지정해줍니다.
+마지막 단계는 앞에서 만든 것 중 **실행에 필요한 것만** 골라 담습니다. 빌드 산출물과 `public`을 복사하고, 포트를 열고, 서버를 띄우면 끝입니다.
 
-이러한 권한과 관련된 작업은 아래와 같은 이점이 있습니다.
+눈여겨볼 건 사용자 생성 부분입니다. `nodejs` 그룹과 `nextjs` 사용자를 만들고 `.next` 디렉터리의 소유권을 넘긴 뒤 `USER nextjs`로 전환합니다. root로 돌지 않으니 컨테이너 안에서 권한 상승 공격의 여지가 줄고, UID/GID를 1001로 고정해 두었으니 어느 환경에서 빌드하든 권한이 같습니다.
 
-- 특정 파일이나 디렉토리에 대한 접근을 제한함으로써 컨테이너 내부에서 권한 상승 공격을 방지합니다.
-- UID와 GID를 고정하여, 개발 및 배포 환경에서 권한 설정이 일관되게 유지되도록 합니다.
-- 시스템 사용자와 그룹을 분리하여, 애플리케이션이 필요한 최소한의 권한만 가지도록 설정합니다.
+---
 
-이후 builder 스테이지의 빌드 artifact를 현재 디렉터리로 복사 후 포트를 지정하고 서버를 실행시키면 Docker container가 실행됩니다.
-
-## Conclusion
-
-Vercel에서 제공하는 기본 Dockerfile을 의미를 해석해보았는데, 이글을 보고 도움이 되었으면 좋겠습니다. 저의 경우 현업에서 별도로 서버구성 담당이 없기에 제가 직접 Docker환경을 구축하였으며, 위의 Dockerfile을 base로 sharp를 다운로드하는 로직 추가 또는 pm2 설정을 통한 무중단 서비스 제공 등 저희 프로젝트에 맞게 더 나아가 소프트웨어 운영에 도움이 되는 방향으로 수정하여 사용중입니다!
+여기까지가 기본 형태입니다. 저는 별도의 인프라 담당이 없어 직접 Docker 환경을 꾸렸는데, 이 파일을 출발점으로 `sharp` 설치를 얹고 pm2로 무중단 배포를 붙이는 식으로 프로젝트에 맞게 고쳐 쓰고 있습니다.
