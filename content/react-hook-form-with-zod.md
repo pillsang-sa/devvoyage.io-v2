@@ -31,7 +31,39 @@ Zod는 타입스크립트 기반의 스키마 선언과 유효성 검사를 위�
 **useForm**은 input을 비제어 컴포넌트로서 제어하기 위한 핵심 역할을 하는 커스텀 훅입니다.
 
 ```tsx
-// TODO(SAMPLE_1)
+export interface SignUpFormData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  consentCheckbox: boolean;
+}
+
+function ReactHookFormsWithZodIsland() {
+  const {
+    register,
+    unregister,
+    formState,
+    watch,
+    handleSubmit,
+    reset,
+    resetField,
+    setError,
+    clearErrors,
+    setValue,
+    setFocus,
+    getValues,
+    getFieldState,
+    trigger,
+    control,
+  } = useForm<SignUpFormData>({
+    mode: 'onChange',
+    resolver: zodResolver(Schema),
+    defaultValues: undefined,
+  });
+}
 ```
 
 React 컴포넌트 내부의 useForm 코드입니다. useForm의 객체 내부에 다양한 메서드가 있으며, 일부 메서드 사용 예시는 아래에서 보여드리겠습니다. 그리고 객체 타입을 생성 후 제네릭으로 useForm에 타입을 지정했습니다. Props로는 원래 10가지가 존재하지만 자주 사용했던 3가지만 설명하겠습니다.
@@ -41,19 +73,63 @@ React 컴포넌트 내부의 useForm 코드입니다. useForm의 객체 내부�
 - **defaultValues**: Form values 대한 기본 값 설정이 가능합니다. 이번 예제에서는 회원가입을 구현하였기에 필요가 없지만 회원정보 수정 등 데이터가 준비되어 있어야 하는 Form인 경우 해당 prop을 사용하니 유용했습니다. 하지만 회원가입 같은 경우에도 안전하게 기본값을 설정하는 것을 많이 보았습니다. 별개로 기본값이 api를 사용해서 받아오는 경우에는 아래와 같은 패턴을 추천해 드립니다. (자세한 내용은 [여기](https://react-hook-form.com/docs/useform)에서 확인할 수 있습니다.)
 
 ```tsx
-// TODO(SAMPLE_2)
+function App() {
+  const values = useFetch('/api');
+  useForm({
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+    },
+    values, // will get updated once values returns
+  });
+}
 ```
 
 ## 비제어 컴포넌트(Uncontrolled Components)
 
 ```tsx
-// TODO(SAMPLE_3)
+<TextField
+  label="Email"
+  required
+  isError={!!formState.errors.email}
+  errorMessage={formState.errors.email?.message}
+  type="email"
+  placeholder="Email"
+  {...register('email')}
+/>;
+
+const TextField = React.forwardRef(
+  (
+    { label, required, isError, errorMessage, ...rest }: TextFieldProps,
+    ref: React.ForwardedRef<HTMLInputElement>,
+  ) => (
+    <div className="flex w-full flex-col gap-1">
+      <label htmlFor={rest.name}>
+        {label}
+        {required ? <strong className="pl-1 text-red-700">*</strong> : <></>}
+      </label>
+      <input
+        id={rest.name}
+        {...rest}
+        className={FormatLib.cn(
+          isError ? 'border-[1px] border-solid border-red-700' : '',
+          'rounded-sm p-[10px]',
+        )}
+      />
+      {isError ? (
+        <span className="text-xs text-red-700">{errorMessage}</span>
+      ) : (
+        <></>
+      )}
+    </div>
+  ),
+);
 ```
 
 style이 중복되어 TextField라는 컴포넌트로 추상화 해보았고, register를 구조 분해 할당하면 아래와 같습니다.
 
 ```tsx
-// TODO(SAMPLE_4)
+const { onChange, onBlur, name, ref } = register('email');
 ```
 
 여기서 비제어 컴포넌트로 사용하기 위한 핵심 부분은 name과 ref입니다. ref를 통해 DOM에서 input에 대한 관리가 가능하고, name을 통해 에러핸들링, 필드 초기화 등이 가능하기 때문입니다. 두 가지의 return 값을 사용해 우리가 평소 사용하던 비제어 컴포넌트 구현이 가능합니다. onChange와 onBlur의 경우는 기획 / 디자인 요구사항이 있을 때 주로 사용했던 것 같습니다.
@@ -61,7 +137,34 @@ style이 중복되어 TextField라는 컴포넌트로 추상화 해보았고, re
 ## Schema
 
 ```tsx
-// TODO(SAMPLE_5)
+const Schema = z
+  .object({
+    email: z.string().email({ message: 'Invalid email.' }),
+    password: z
+      .string()
+      .min(8, { message: 'Must be 8 or more characters long.' })
+      .max(16, { message: 'Must be 16 or fewer characters long.' })
+      .regex(
+        /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?\/~`-]).*$/,
+        { message: 'Invalid password.' },
+      ),
+    confirmPassword: z
+      .string()
+      .min(8, { message: 'Must be 8 or more characters long.' })
+      .max(16, { message: 'Must be 16 or fewer characters long.' })
+      .regex(
+        /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?\/~`-]).*$/,
+        { message: 'Invalid password.' },
+      ),
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+    phoneNumber: z.string(),
+    consentCheckbox: z.boolean(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 ```
 
 zod를 통해 작성한 타입 스키마입니다. 위에서 resolver prop을 사용해 RHF와 유효성 검사 라이브러리가 통합되는 내용을 설명해 드렸습니다. 해당 부분에서 사용된 스키마가 위의 코드입니다. z에서 제공하는 property를 사용하여 스키마를 작성하게 되며 typescript와 매우 유사합니다. 다만 다른 점이 있다면 유효성을 검사하는 부분입니다. 메서드 체이닝을 사용해 유효성 로직을 매우 직관적이고 명확하게 지정이 가능해 사용감이 좋습니다. 기획의 변경 사항이 있을 때 한곳에 모아져 있다 보니 수정하기에 매우 용이했습니다.
@@ -77,7 +180,17 @@ refine의 실제 의미와 zod에서의 의미가 크게 관련이 있는지는 
 ## FormState
 
 ```tsx
-// TODO(SAMPLE_6)
+const isButtonDisabled = !formState.isDirty || !formState.isValid;
+
+return (
+  <button
+    form="signUpForm"
+    disabled={isButtonDisabled}
+    className="w-full rounded-xl bg-blue-400 py-[10px] text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-400"
+  >
+    Submit
+  </button>
+);
 ```
 
 여러 가지 Form UI를 경험했던 기억으로 유효성 검사 또는 필수 입력 필드가 만족하지 않았을 때는 submit을 하는 버튼이 활성화되지 않았습니다. 앞선 기능을 구현하기 위해서는 RHF의 formState의 isDirty와 isValid가 좋은 선택일 수 있습니다. 정의는 아래와 같습니다.
