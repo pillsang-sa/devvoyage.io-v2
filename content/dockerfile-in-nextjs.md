@@ -22,7 +22,8 @@ publishedAt: 2024-05-20
 ## Base stage
 
 ```dockerfile
-// TODO(SAMPLE_1)
+FROM node:18-alpine AS base
+RUN corepack enable
 ```
 
 node:18-alpine는 기본 이미지로서 [Docker Hub](https://hub.docker.com)를 통해 본인에게 더 적합한 기본 이미지를 찾을 수 있습니다. 위 이미지는 nodejs 18버전을 사용합니다. alpine은 linux를 경량화하여 배포한 이미지로 보안에 특화되었고 불필요한 package와 daemon이 없으며 패키지 관리자로 apk를 사용합니다.
@@ -32,7 +33,20 @@ node:18-alpine는 기본 이미지로서 [Docker Hub](https://hub.docker.com)를
 ## Deps stage
 
 ```dockerfile
-// TODO(SAMPLE_2)
+# Install dependencies only when needed
+FROM base AS deps
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install dependencies based on the preferred package manager
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
 ```
 
 deps stage로 base 이미지를 그대로 가져와 사용합니다.
@@ -44,13 +58,32 @@ WORKDIR 명령어로 /app 디렉터리를 작업 디렉터리로 설정해 준 �
 또한 저는 sharp(이미지 최적화 패키지)를 linux 플랫폼과 호환되게 해당 stage에서 pnpm add를 통해 설치하였습니다.
 
 ```dockerfile
-// TODO(SAMPLE_3)
+RUN \
+  if [ -f pnpm-lock.yaml ]; then pnpm i --frozen-lockfile && pnpm add sharp; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
 ```
 
 ## Builder stage
 
 ```dockerfile
-// TODO(SAMPLE_4)
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+# Uncomment the following line in case you want to disable telemetry during the build.
+# ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN \
+  if [ -f yarn.lock ]; then yarn run build; \
+  elif [ -f package-lock.json ]; then npm run build; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
 ```
 
 builder stage로 deps와 동일하게 base 이미지를 그대로 가져와 사용합니다.
@@ -64,7 +97,36 @@ COPY를 완료한 뒤 RUN 명령어를 사용해 Next.js 프로젝트 build를 �
 ## Runner stage
 
 ```dockerfile
-// TODO(SAMPLE_5)
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+# Uncomment the following line in case you want to disable telemetry during runtime.
+# ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Set the correct permission for prerender cache
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
+
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+
+# server.js is created by next build from the standalone output
+# https://nextjs.org/docs/pages/api-reference/next-config-js/output
+CMD HOSTNAME="0.0.0.0" node server.js
 ```
 
 runner stage는 매우 간단합니다. 기존 stage에서 생성된 데이터 중 필요한 데이터를 가져와 서비스를 실행시키는 역할을 하고 있습니다.
