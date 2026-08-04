@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MarkdownAsync, type Components } from "react-markdown";
 import rehypePrettyCode, { type Options as PrettyCodeOptions } from "rehype-pretty-code";
 import rehypeSlug from "rehype-slug";
+import rehypeUnwrapImages from "rehype-unwrap-images";
 import remarkGfm from "remark-gfm";
 import { MarkdownImage } from "./markdown-image";
 
@@ -59,7 +60,14 @@ export function Markdown({ children }: { children: string }) {
   return (
     <MarkdownAsync
       remarkPlugins={[remarkGfm]}
-      rehypePlugins={[rehypeSlug, [rehypePrettyCode, prettyCodeOptions]]}
+      rehypePlugins={[
+        rehypeSlug,
+        // A lone image is a paragraph in markdown, but `img` renders here as a
+        // <figure>, which a <p> may not contain. The browser closes the <p>
+        // early, and the DOM stops matching what the server sent.
+        rehypeUnwrapImages,
+        [rehypePrettyCode, prettyCodeOptions],
+      ]}
       components={components}
     >
       {children}
