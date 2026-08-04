@@ -41,7 +41,7 @@ export interface SignUpFormData {
   consentCheckbox: boolean;
 }
 
-function ReactHookFormsWithZodIsland() {
+function ReactHookFormWithZodExample() {
   const {
     register,
     unregister,
