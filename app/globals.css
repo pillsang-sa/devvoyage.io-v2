@@ -46,6 +46,61 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
+   Entrance animations
+
+   Both are pure CSS: `Reveal` only toggles `data-revealed` once its block
+   scrolls into view, and the skill badges run off a delay set inline. Movement
+   is dropped for visitors who ask for reduced motion — the fade stays, since
+   opacity alone does not provoke motion sickness.
+   --------------------------------------------------------------------------- */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 450ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-reveal][data-revealed] {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes badge-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes badge-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+[data-badge] {
+  opacity: 0;
+  animation: badge-in 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    transform: none;
+  }
+
+  [data-badge] {
+    animation-name: badge-fade;
+  }
+}
+
+/* Reveals start hidden here and are uncovered by script, so a visitor without
+   JavaScript would see nothing. The `<noscript>` block in `app/layout.tsx`
+   hands the content back — `@media (scripting: none)` is the tidier spelling
+   but is younger than the browsers a résumé link gets opened in. */
+
+/* ---------------------------------------------------------------------------
    Article typography
    --------------------------------------------------------------------------- */
 
