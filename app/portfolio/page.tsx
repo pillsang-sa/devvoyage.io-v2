@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Reveal } from "@/components/reveal";
 import { SkillBadges } from "@/components/skill-badges";
 
 export const metadata: Metadata = {
@@ -228,79 +227,75 @@ export default function PortfolioPage() {
       <div className="space-y-14">
         {experiences.map((experience) => (
           <section key={experience.company}>
-            <Reveal>
-              <div className="border-b border-border pb-4">
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
-                    {experience.company}
-                  </h2>
-                  <p className="font-mono text-xs text-muted">
-                    {experience.period} · {experience.duration}
-                  </p>
-                </div>
-                <p className="mt-1 text-sm text-muted">
-                  {experience.role} · {experience.field}
+            <div data-reveal="" className="border-b border-border pb-4">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
+                  {experience.company}
+                </h2>
+                <p className="font-mono text-xs text-muted">
+                  {experience.period} · {experience.duration}
                 </p>
               </div>
-            </Reveal>
+              <p className="mt-1 text-sm text-muted">
+                {experience.role} · {experience.field}
+              </p>
+            </div>
 
             <ol className="mt-8 space-y-10">
               {experience.projects.map((project) => (
                 <li key={project.name}>
-                  <Reveal>
-                    <article>
-                      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                        <h3 className="font-semibold tracking-tight sm:text-lg">
-                          {project.name}
-                        </h3>
-                        <p className="font-mono text-xs text-muted">
-                          {project.period}
-                          {project.contribution
-                            ? ` · ${project.contribution}`
-                            : ""}
-                        </p>
-                      </div>
+                  <article data-reveal="">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                      <h3 className="font-semibold tracking-tight sm:text-lg">
+                        {project.name}
+                      </h3>
+                      <p className="font-mono text-xs text-muted">
+                        {project.period}
+                        {project.contribution
+                          ? ` · ${project.contribution}`
+                          : ""}
+                      </p>
+                    </div>
 
-                      {project.summary ? (
-                        <p className="mt-2 text-sm leading-relaxed text-muted">
-                          {project.summary}
-                        </p>
-                      ) : null}
+                    {project.summary ? (
+                      <p className="mt-2 text-sm leading-relaxed text-muted">
+                        {project.summary}
+                      </p>
+                    ) : null}
 
-                      {project.url ? (
-                        <a
-                          href={project.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="group mt-2 inline-flex items-center gap-1 rounded-md font-mono text-xs text-muted transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    {project.url ? (
+                      <a
+                        href={project.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group mt-2 inline-flex items-center gap-1 rounded-md font-mono text-xs text-muted transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                      >
+                        {new URL(project.url).host}
+                        <span
+                          aria-hidden="true"
+                          className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                         >
-                          {new URL(project.url).host}
-                          <span
-                            aria-hidden="true"
-                            className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                          >
-                            ↗
-                          </span>
-                        </a>
-                      ) : null}
+                          ↗
+                        </span>
+                      </a>
+                    ) : null}
 
-                      <ul className="mt-4 space-y-3">
-                        {project.highlights.map((highlight) => (
-                          <li
-                            key={highlight.detail}
-                            className="border-l-2 border-border pl-4 text-sm leading-relaxed text-muted transition-colors hover:border-accent"
-                          >
-                            {highlight.title ? (
-                              <strong className="block font-medium text-foreground">
-                                {highlight.title}
-                              </strong>
-                            ) : null}
-                            {highlight.detail}
-                          </li>
-                        ))}
-                      </ul>
-                    </article>
-                  </Reveal>
+                    <ul className="mt-4 space-y-3">
+                      {project.highlights.map((highlight) => (
+                        <li
+                          key={highlight.detail}
+                          className="border-l-2 border-border pl-4 text-sm leading-relaxed text-muted transition-colors hover:border-accent"
+                        >
+                          {highlight.title ? (
+                            <strong className="block font-medium text-foreground">
+                              {highlight.title}
+                            </strong>
+                          ) : null}
+                          {highlight.detail}
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
                 </li>
               ))}
             </ol>

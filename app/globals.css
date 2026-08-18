@@ -48,23 +48,25 @@ body {
 /* ---------------------------------------------------------------------------
    Entrance animations
 
-   Both are pure CSS: `Reveal` only toggles `data-revealed` once its block
-   scrolls into view, and the skill badges run off a delay set inline. Movement
-   is dropped for visitors who ask for reduced motion — the fade stays, since
-   opacity alone does not provoke motion sickness.
+   Both run without a line of JavaScript, and — this is the part worth keeping —
+   neither can leave content stranded. An earlier cut hid the sections in CSS and
+   had an IntersectionObserver uncover them, which meant a visitor whose script
+   never ran, for any reason at all, read a page with no work history on it. A
+   `<noscript>` fallback does not save that: script being *enabled but broken*
+   (a dropped chunk, a blocking extension) is the common case, and `<noscript>`
+   is inert there.
+
+   So nothing here sets a resting `opacity: 0`. Both keyframe sets animate *from*
+   hidden and leave the closing frame implicit, which CSS fills from the
+   element's own value — visible. Fill modes cover the run-up. The worst a
+   failure can do is skip the animation.
    --------------------------------------------------------------------------- */
 
-[data-reveal] {
-  opacity: 0;
-  transform: translateY(8px);
-  transition:
-    opacity 450ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 450ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-[data-reveal][data-revealed] {
-  opacity: 1;
-  transform: none;
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 
 @keyframes badge-in {
@@ -80,25 +82,28 @@ body {
   }
 }
 
+/* The badges sit above the fold, so they play once on load, staggered by an
+   inline `animation-delay`; `backwards` holds the opening frame through it. */
 [data-badge] {
-  opacity: 0;
-  animation: badge-in 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: badge-in 350ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* Sections are driven by scroll position instead of time. Where `view()` is not
+   understood the declaration is dropped and the animation falls back to the
+   document timeline: everything simply fades in once at load. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    animation: reveal-in 450ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 20%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-reveal] {
-    transform: none;
-  }
-
   [data-badge] {
     animation-name: badge-fade;
   }
 }
-
-/* Reveals start hidden here and are uncovered by script, so a visitor without
-   JavaScript would see nothing. The `<noscript>` block in `app/layout.tsx`
-   hands the content back — `@media (scripting: none)` is the tidier spelling
-   but is younger than the browsers a résumé link gets opened in. */
 
 /* ---------------------------------------------------------------------------
    Article typography

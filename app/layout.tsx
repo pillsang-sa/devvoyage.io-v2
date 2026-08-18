@@ -43,11 +43,6 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        {/* Scroll reveals are hidden until script uncovers them; see the
-            entrance-animation section of globals.css. */}
-        <noscript>
-          <style>{`[data-reveal],[data-badge]{opacity:1;transform:none;animation:none}`}</style>
-        </noscript>
       </head>
       <body className="flex min-h-full flex-col">
         <SiteHeader />
