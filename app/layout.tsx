@@ -1,6 +1,15 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
+import {
+  OG_IMAGE,
+  SITE_DESCRIPTION,
+  SITE_LOCALE,
+  SITE_NAME,
+  SITE_URL,
+  absoluteUrl,
+  alternatesFor,
+} from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,12 +23,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://devvoyage.io"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "devvoyage",
-    template: "%s · devvoyage",
+    default: SITE_NAME,
+    template: `%s · ${SITE_NAME}`,
   },
-  description: "개발하며 배운 것들을 기록합니다.",
+  description: SITE_DESCRIPTION,
+  alternates: alternatesFor("/"),
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: SITE_LOCALE,
+    url: absoluteUrl("/"),
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE],
+  },
+  // Opts into X's wide card. Without it the preview image is cropped into a
+  // small square thumbnail beside the text instead of leading the card.
+  twitter: { card: "summary_large_image" },
 };
 
 /**
@@ -48,8 +70,16 @@ export default function RootLayout({
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <footer className="border-t border-border">
-          <div className="mx-auto w-full max-w-3xl px-4 py-8 text-sm text-muted sm:px-6">
-            © {new Date().getFullYear()} devvoyage
+          <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-4 py-8 text-sm text-muted sm:px-6">
+            <span>© {new Date().getFullYear()} {SITE_NAME}</span>
+            {/* The <link rel="alternate"> in <head> only helps a reader that is
+                already looking; this is how a person finds the feed. */}
+            <a
+              href="/feed.xml"
+              className="rounded-md transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            >
+              RSS
+            </a>
           </div>
         </footer>
       </body>

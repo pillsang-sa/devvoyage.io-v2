@@ -1,10 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SkillBadges } from "@/components/skill-badges";
+import {
+  OG_IMAGE,
+  SITE_LOCALE,
+  SITE_NAME,
+  absoluteUrl,
+  alternatesFor,
+} from "@/lib/site";
+
+const PORTFOLIO_DESCRIPTION = "그동안 만들어온 작업들입니다.";
 
 export const metadata: Metadata = {
   title: "포트폴리오",
-  description: "그동안 만들어온 작업들입니다.",
+  description: PORTFOLIO_DESCRIPTION,
+  alternates: alternatesFor("/portfolio"),
+  openGraph: {
+    type: "profile",
+    siteName: SITE_NAME,
+    locale: SITE_LOCALE,
+    url: absoluteUrl("/portfolio"),
+    title: `포트폴리오 · ${SITE_NAME}`,
+    description: PORTFOLIO_DESCRIPTION,
+    images: [OG_IMAGE],
+  },
 };
 
 const skills = [

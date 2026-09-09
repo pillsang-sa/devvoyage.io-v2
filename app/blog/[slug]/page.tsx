@@ -4,6 +4,13 @@ import { notFound } from "next/navigation";
 import { Markdown } from "@/components/markdown/markdown";
 import { formatDate } from "@/lib/format";
 import { getAllSlugs, getPost } from "@/lib/posts";
+import {
+  OG_IMAGE,
+  SITE_LOCALE,
+  SITE_NAME,
+  absoluteUrl,
+  alternatesFor,
+} from "@/lib/site";
 
 // A static export cannot render slugs that were not known at build time.
 export const dynamicParams = false;
@@ -20,15 +27,24 @@ export async function generateMetadata(
 
   if (!post) return {};
 
+  const { title, summary, publishedAt, updatedAt } = post.meta;
+
   return {
-    title: post.meta.title,
-    description: post.meta.summary,
+    title,
+    description: summary,
+    alternates: alternatesFor(`/blog/${slug}`),
     openGraph: {
       type: "article",
-      title: post.meta.title,
-      description: post.meta.summary,
-      publishedTime: post.meta.publishedAt,
-      modifiedTime: post.meta.updatedAt,
+      // Restated because a nested metadata field replaces the layout's rather
+      // than merging into it.
+      siteName: SITE_NAME,
+      locale: SITE_LOCALE,
+      url: absoluteUrl(`/blog/${slug}`),
+      title,
+      description: summary,
+      publishedTime: publishedAt,
+      modifiedTime: updatedAt,
+      images: [OG_IMAGE],
     },
   };
 }

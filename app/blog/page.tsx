@@ -1,10 +1,28 @@
 import type { Metadata } from "next";
 import { PostListItem } from "@/components/post-list-item";
 import { getAllPosts } from "@/lib/posts";
+import {
+  OG_IMAGE,
+  SITE_DESCRIPTION,
+  SITE_LOCALE,
+  SITE_NAME,
+  absoluteUrl,
+  alternatesFor,
+} from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "블로그",
-  description: "개발하며 배운 것들을 기록합니다.",
+  description: SITE_DESCRIPTION,
+  alternates: alternatesFor("/blog"),
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: SITE_LOCALE,
+    url: absoluteUrl("/blog"),
+    title: `블로그 · ${SITE_NAME}`,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE],
+  },
 };
 
 export default function BlogIndexPage() {
