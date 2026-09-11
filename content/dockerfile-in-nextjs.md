@@ -2,6 +2,7 @@
 title: Dockerfile in Next.js
 summary: Vercel이 제공하는 Next.js Dockerfile 샘플을 한 스테이지씩 뜯어 읽었습니다. 왜 네 단계로 나뉘어 있고, 각 단계가 무엇을 남기는지.
 publishedAt: 2024-05-20
+author: PILLSANG SUNG
 ---
 
 development, staging, production의 환경 차이 때문에 고생해 본 경험은 대부분 있을 겁니다. Docker로 Next.js 이미지를 만들어 두면 그 차이가 사라집니다. 여기서는 [Vercel이 제공하는 Dockerfile 샘플](https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile)을 기준으로, 각 스테이지가 무엇을 하는지 읽어보겠습니다.

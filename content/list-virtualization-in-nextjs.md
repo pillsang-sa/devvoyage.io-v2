@@ -2,6 +2,7 @@
 title: Next.js에서의 목록 가상화
 summary: 무한 스크롤로 DOM이 계속 불어나 iOS 웹뷰가 백화됐습니다. react-virtuoso로 화면에 보이는 만큼만 남기니 노드 72개가 9개로, 메모리는 144MB에서 101MB로 줄었습니다.
 publishedAt: 2024-10-18
+author: PILLSANG SUNG
 ---
 
 무한 스크롤로 아이템이 계속 쌓이면서 DOM 노드가 불어났고, iOS 웹뷰에서 화면이 하얗게 뜨는 백화현상이 발생했습니다. 화면에 보이는 부분만 렌더링하는 virtualization(windowing)으로 접근했습니다.

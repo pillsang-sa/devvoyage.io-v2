@@ -5,8 +5,28 @@
  */
 export const SITE_URL = "https://devvoyage.io";
 export const SITE_NAME = "devvoyage";
+/** What the blog is. Used by /blog, the RSS channel and the Blog schema. */
 export const SITE_DESCRIPTION = "개발하며 배운 것들을 기록합니다.";
+/** What the *site* is — the home page says this, so its metadata should too. */
+export const SITE_TAGLINE = "만들고, 기록합니다.";
 export const SITE_LOCALE = "ko_KR";
+/** BCP 47 form of `SITE_LOCALE`; schema.org wants this shape, Open Graph the other. */
+export const SITE_LANGUAGE = "ko-KR";
+
+export const SITE_AUTHOR = "PILLSANG SUNG";
+export const SITE_AUTHOR_JOB_TITLE = "프론트엔드 개발자";
+
+/** Doubles as `Person.knowsAbout` in the structured data. */
+export const SKILLS = [
+  "JavaScript",
+  "TypeScript",
+  "React",
+  "Next.js",
+  "Node.js",
+  "NestJS",
+  "RDBMS",
+  "Git",
+] as const;
 
 /**
  * `trailingSlash: true` means GitHub Pages serves `/blog/foo/`, and `/blog/foo`

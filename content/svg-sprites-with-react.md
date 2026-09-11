@@ -2,6 +2,7 @@
 title: Using SVG sprites with React
 summary: 아이콘마다 컴포넌트를 만드는 대신 하나의 스프라이트 SVG로 합치고, use로 필요한 것만 꺼내 쓰는 Icon 컴포넌트를 만들었습니다.
 publishedAt: 2025-01-18
+author: PILLSANG SUNG
 updatedAt: 2025-01-19
 ---
 

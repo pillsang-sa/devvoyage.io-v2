@@ -2,6 +2,7 @@
 title: (MY)SQL JOIN 가이드 for Beginner
 summary: 레거시 서비스를 유지보수하며 SQL을 직접 쓰다 정리한 JOIN 노트. 네 가지 종류가 무엇을 남기고 무엇을 버리는지, 실행 가능한 예제와 함께.
 publishedAt: 2024-08-16
+author: PILLSANG SUNG
 ---
 
 레거시 서비스를 유지보수하면서 모델에서 SQL을 직접 작성할 일이 많았습니다. 그때 정리해 둔 JOIN 노트입니다.

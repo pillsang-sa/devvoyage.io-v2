@@ -2,6 +2,7 @@
 title: window.open returns null in safari
 summary: 모바일 Safari에서 새 탭이 열리지 않았습니다. 범인은 팝업 차단 설정이 아니라, 클릭과 window.open 사이에 끼어 있던 비동기 호출이었습니다.
 publishedAt: 2024-07-31
+author: PILLSANG SUNG
 ---
 
 크로스 브라우징을 점검하다 모바일 Safari에서 버튼을 눌러도 아무 일이 일어나지 않는 걸 발견했습니다. `window.open()`이 `WindowProxy` 대신 `null`을 반환하고 있었습니다.

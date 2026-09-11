@@ -1,5 +1,6 @@
 import { getAllPosts } from "@/lib/posts";
 import {
+  SITE_AUTHOR,
   SITE_DESCRIPTION,
   SITE_NAME,
   absoluteUrl,
@@ -38,6 +39,7 @@ export function GET(): Response {
       <link>${escapeXml(url)}</link>
       <guid isPermaLink="true">${escapeXml(url)}</guid>
       <pubDate>${toRfc822(post.publishedAt)}</pubDate>
+      <dc:creator>${escapeXml(post.author)}</dc:creator>
 ${post.summary ? `      <description>${escapeXml(post.summary)}</description>\n` : ""}    </item>`;
     })
     .join("\n");
@@ -50,12 +52,13 @@ ${post.summary ? `      <description>${escapeXml(post.summary)}</description>\n`
     : undefined;
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>${escapeXml(SITE_NAME)}</title>
     <link>${escapeXml(absoluteUrl("/blog"))}</link>
     <description>${escapeXml(SITE_DESCRIPTION)}</description>
     <language>ko</language>
+    <copyright>© ${new Date().getFullYear()} ${escapeXml(SITE_AUTHOR)}</copyright>
 ${lastBuildDate ? `    <lastBuildDate>${lastBuildDate}</lastBuildDate>\n` : ""}    <atom:link href="${escapeXml(absoluteUrl("/feed.xml"))}" rel="self" type="application/rss+xml" />
 ${items}
   </channel>

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/json-ld";
 import { PostListItem } from "@/components/post-list-item";
 import { getAllPosts } from "@/lib/posts";
+import { blogSchema } from "@/lib/schema";
 import {
   OG_IMAGE,
   SITE_DESCRIPTION,
@@ -30,6 +32,8 @@ export default function BlogIndexPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
+      <JsonLd data={blogSchema(posts)} />
+
       <header className="mb-10">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">블로그</h1>
         <p className="mt-2 text-sm text-muted sm:text-base">

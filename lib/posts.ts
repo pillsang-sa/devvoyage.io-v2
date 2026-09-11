@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { SITE_AUTHOR } from "./site";
 
 const CONTENT_DIR = path.join(process.cwd(), "content");
 
@@ -8,6 +9,8 @@ export type PostMeta = {
   slug: string;
   title: string;
   summary?: string;
+  /** Front matter `author`, falling back to the site's own. */
+  author: string;
   /** ISO date, `YYYY-MM-DD`. */
   publishedAt: string;
   /** ISO date, `YYYY-MM-DD`. Absent when the post was never revised. */
@@ -62,6 +65,10 @@ function readPost(fileName: string): Post {
       slug,
       title: data.title,
       summary: typeof data.summary === "string" ? data.summary : undefined,
+      author:
+        typeof data.author === "string" && data.author.trim() !== ""
+          ? data.author
+          : SITE_AUTHOR,
       publishedAt,
       // A same-day `updatedAt` carries no information, so drop it.
       updatedAt: updatedAt === publishedAt ? undefined : updatedAt,

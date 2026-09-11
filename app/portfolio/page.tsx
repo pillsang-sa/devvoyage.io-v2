@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { JsonLd } from "@/components/json-ld";
 import { SkillBadges } from "@/components/skill-badges";
+import { portfolioSchema } from "@/lib/schema";
 import {
   OG_IMAGE,
   SITE_LOCALE,
   SITE_NAME,
+  SKILLS,
   absoluteUrl,
   alternatesFor,
 } from "@/lib/site";
@@ -25,17 +28,6 @@ export const metadata: Metadata = {
     images: [OG_IMAGE],
   },
 };
-
-const skills = [
-  "JavaScript",
-  "TypeScript",
-  "React",
-  "Next.js",
-  "Node.js",
-  "NestJS",
-  "RDBMS",
-  "Git",
-] as const;
 
 type Highlight = {
   /* Projects lead with a bolded takeaway; plain task lists omit it. */
@@ -226,6 +218,8 @@ const experiences: Experience[] = [
 export default function PortfolioPage() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
+      <JsonLd data={portfolioSchema()} />
+
       <header className="mb-10">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
           포트폴리오
@@ -240,7 +234,7 @@ export default function PortfolioPage() {
           아키텍처를 선택하려 노력합니다.
         </p>
 
-        <SkillBadges skills={skills} />
+        <SkillBadges skills={SKILLS} />
       </header>
 
       <div className="space-y-14">

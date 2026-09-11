@@ -2,6 +2,7 @@
 title: Electron with React
 summary: 사내 윈도우 앱을 React + Electron으로 만들면서 정리한 것들. 두 프로세스가 어떻게 나뉘고, contextBridge로 무엇을 얼마나 열어줄지.
 publishedAt: 2024-11-19
+author: PILLSANG SUNG
 ---
 
 사내에서 윈도우 데스크톱 앱 요청이 들어와 맡게 됐습니다. 기능이 많지는 않았지만 React + Electron 조합을 처음 써보면서 정리한 내용입니다.

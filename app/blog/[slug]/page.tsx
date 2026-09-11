@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { JsonLd } from "@/components/json-ld";
 import { Markdown } from "@/components/markdown/markdown";
 import { formatDate } from "@/lib/format";
 import { getAllSlugs, getPost } from "@/lib/posts";
+import { blogPostSchema } from "@/lib/schema";
 import {
   OG_IMAGE,
   SITE_LOCALE,
@@ -27,11 +29,14 @@ export async function generateMetadata(
 
   if (!post) return {};
 
-  const { title, summary, publishedAt, updatedAt } = post.meta;
+  const { title, summary, author, publishedAt, updatedAt } = post.meta;
 
   return {
     title,
     description: summary,
+    // Overrides the layout's site-wide author with whoever the front matter
+    // credits, which is what `article:author` below reports to a crawler.
+    authors: [{ name: author }],
     alternates: alternatesFor(`/blog/${slug}`),
     openGraph: {
       type: "article",
@@ -44,6 +49,7 @@ export async function generateMetadata(
       description: summary,
       publishedTime: publishedAt,
       modifiedTime: updatedAt,
+      authors: [author],
       images: [OG_IMAGE],
     },
   };
@@ -59,6 +65,8 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
+      <JsonLd data={blogPostSchema(meta)} />
+
       <article>
         <header className="mb-10 border-b border-border pb-8">
           <h1 className="text-2xl font-bold tracking-tight text-balance sm:text-4xl">
