@@ -16,6 +16,13 @@ export const SITE_LANGUAGE = "ko-KR";
 export const SITE_AUTHOR = "PILLSANG SUNG";
 export const SITE_AUTHOR_JOB_TITLE = "프론트엔드 개발자";
 
+/**
+ * Naver Search Advisor. The same code appears twice on purpose: once as the
+ * file `public/naver<code>.html`, and once as the meta tag below, so ownership
+ * still verifies if Naver is checking by whichever method the console is set to.
+ */
+export const NAVER_SITE_VERIFICATION = "11f3adb3a1e9430a9787909ccc849e7f";
+
 /** Doubles as `Person.knowsAbout` in the structured data. */
 export const SKILLS = [
   "JavaScript",

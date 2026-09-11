@@ -4,6 +4,7 @@ import { JsonLd } from "@/components/json-ld";
 import { SiteHeader } from "@/components/site-header";
 import { siteSchema } from "@/lib/schema";
 import {
+  NAVER_SITE_VERIFICATION,
   OG_IMAGE,
   SITE_AUTHOR,
   SITE_LOCALE,
@@ -53,6 +54,11 @@ export const metadata: Metadata = {
   // Opts into X's wide card. Without it the preview image is cropped into a
   // small square thumbnail beside the text instead of leading the card.
   twitter: { card: "summary_large_image" },
+  // `public/naver<code>.html` proves the same thing by file; this covers the
+  // case where Search Advisor is set to verify by meta tag instead.
+  verification: {
+    other: { "naver-site-verification": NAVER_SITE_VERIFICATION },
+  },
 };
 
 /**
