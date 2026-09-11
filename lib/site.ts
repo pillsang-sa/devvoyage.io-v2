@@ -17,6 +17,19 @@ export const SITE_AUTHOR = "PILLSANG SUNG";
 export const SITE_AUTHOR_JOB_TITLE = "프론트엔드 개발자";
 
 /**
+ * Becomes `Person.sameAs`, which is how a name stops being a string and starts
+ * being someone: a crawler can cross-check these profiles against each other
+ * and resolve all of them — and every post they author — to one entity.
+ *
+ * Worth linking back to devvoyage.io from each of these. A claim both ends
+ * make carries considerably more weight than one this site makes alone.
+ */
+export const SITE_AUTHOR_PROFILES = [
+  "https://github.com/pillsang-sa",
+  "https://www.linkedin.com/in/pillsang-sung/",
+] as const;
+
+/**
  * Naver Search Advisor. The same code appears twice on purpose: once as the
  * file `public/naver<code>.html`, and once as the meta tag below, so ownership
  * still verifies if Naver is checking by whichever method the console is set to.

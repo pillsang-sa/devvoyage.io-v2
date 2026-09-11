@@ -3,6 +3,7 @@ import {
   OG_IMAGE,
   SITE_AUTHOR,
   SITE_AUTHOR_JOB_TITLE,
+  SITE_AUTHOR_PROFILES,
   SITE_DESCRIPTION,
   SITE_LANGUAGE,
   SITE_NAME,
@@ -32,6 +33,7 @@ const person = {
   name: SITE_AUTHOR,
   url: absoluteUrl("/"),
   jobTitle: SITE_AUTHOR_JOB_TITLE,
+  sameAs: [...SITE_AUTHOR_PROFILES],
   knowsAbout: [...SKILLS],
   worksFor: {
     "@type": "Organization",
