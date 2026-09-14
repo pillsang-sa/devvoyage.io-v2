@@ -2,6 +2,7 @@
 title: 블로그를 이전하며
 summary: 정적 블로그에는 Astro가 더 맞는 도구입니다. 그럼에도 Next.js로 옮긴 이유와, 그 대가로 지불하고 있는 184KB에 대하여.
 publishedAt: 2026-08-04
+updatedAt: 2026-09-11
 author: PILLSANG SUNG
 ---
 
