@@ -6,6 +6,35 @@ import rehypeUnwrapImages from "rehype-unwrap-images";
 import remarkGfm from "remark-gfm";
 import { MarkdownImage } from "./markdown-image";
 
+type HastNode = {
+  type: string;
+  tagName?: string;
+  properties?: Record<string, unknown>;
+  children?: HastNode[];
+};
+
+/**
+ * Every markdown image is lazy by default, which is right for most of them and
+ * wrong for the first: near the top of a post it is often the largest thing on
+ * screen, and a lazy image is not fetched until layout proves it is visible,
+ * which delays LCP. Only the renderer knows document order, so the first <img>
+ * is marked here and `MarkdownImage` reads the mark.
+ */
+function rehypeEagerFirstImage() {
+  return (tree: HastNode) => {
+    const find = (node: HastNode): HastNode | undefined => {
+      if (node.type === "element" && node.tagName === "img") return node;
+      for (const child of node.children ?? []) {
+        const found = find(child);
+        if (found) return found;
+      }
+    };
+
+    const first = find(tree);
+    if (first) first.properties = { ...first.properties, loading: "eager" };
+  };
+}
+
 const prettyCodeOptions: PrettyCodeOptions = {
   theme: { light: "github-light", dark: "github-dark-dimmed" },
   // Backgrounds come from our own theme variables so code blocks match the page.
@@ -66,6 +95,7 @@ export function Markdown({ children }: { children: string }) {
         // <figure>, which a <p> may not contain. The browser closes the <p>
         // early, and the DOM stops matching what the server sent.
         rehypeUnwrapImages,
+        rehypeEagerFirstImage,
         [rehypePrettyCode, prettyCodeOptions],
       ]}
       components={components}

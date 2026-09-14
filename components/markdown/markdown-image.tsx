@@ -28,7 +28,7 @@ type Props = ComponentPropsWithoutRef<"img"> & { node?: unknown };
 // `node` is destructured only to keep react-markdown's hast node out of
 // `...rest`, which is spread onto the <img> below.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function MarkdownImage({ src, alt, node: _node, ...rest }: Props) {
+export function MarkdownImage({ src, alt, loading, node: _node, ...rest }: Props) {
   if (typeof src !== "string") return null;
 
   const size = intrinsicSize(src);
@@ -42,7 +42,8 @@ export function MarkdownImage({ src, alt, node: _node, ...rest }: Props) {
         alt={alt ?? ""}
         width={size?.width}
         height={size?.height}
-        loading="lazy"
+        // "eager" only on the first image of a post; see `rehypeEagerFirstImage`.
+        loading={loading ?? "lazy"}
         decoding="async"
         className="h-auto w-full rounded-lg border border-border"
       />
