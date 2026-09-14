@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { JsonLd } from "@/components/json-ld";
 import { SiteHeader } from "@/components/site-header";
@@ -59,6 +59,18 @@ export const metadata: Metadata = {
   verification: {
     other: { "naver-site-verification": NAVER_SITE_VERIFICATION },
   },
+};
+
+/**
+ * Tints the mobile browser's address bar to match the page. Mirrors
+ * `--background` in globals.css; it follows the OS preference, since a meta
+ * tag cannot see the `data-theme` a visitor picked with the toggle.
+ */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 /**
