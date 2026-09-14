@@ -86,8 +86,8 @@ export function alternatesFor(path: string) {
  */
 export const OG_IMAGE = {
   url: absoluteUrl("/og.jpg"),
-  width: 640,
-  height: 360,
+  width: 1200,
+  height: 630,
   type: "image/jpeg",
-  alt: `${SITE_NAME} — 청록빛 그러데이션이 흐르는 추상 이미지`,
+  alt: `${SITE_NAME} — 청록빛 배경 위로 유리 같은 곡선이 겹쳐 흐르는 추상 이미지`,
 } as const;
