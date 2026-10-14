@@ -1,4 +1,26 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { SITE_URL, absoluteUrl } from "@/lib/site";
+
+/**
+ * A 404 is served under whatever URL the visitor mistyped, so it inherits the
+ * root layout's canonical and claims to be the home page. `null` drops the tag
+ * rather than pointing it somewhere wrong; `types` is restated because a page
+ * that sets `alternates` replaces the layout's instead of merging into it.
+ *
+ * `noindex` is already emitted for this route; `follow` is what keeps a crawler
+ * walking the links out of here.
+ */
+export const metadata: Metadata = {
+  title: "페이지를 찾을 수 없습니다",
+  description: "주소가 바뀌었거나 삭제된 글일 수 있습니다.",
+  alternates: {
+    canonical: null,
+    types: { "application/rss+xml": absoluteUrl("/feed.xml") },
+  },
+  robots: { index: false, follow: true },
+  openGraph: { url: SITE_URL },
+};
 
 export default function NotFound() {
   return (
