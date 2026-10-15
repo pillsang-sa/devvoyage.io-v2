@@ -8,7 +8,13 @@
     "build": "next build",
     "preview": "npx --yes serve out -l 8080",
     "typecheck": "next typegen && tsc --noEmit",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,mjs}": [
+      "eslint --max-warnings=0"
+    ]
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
@@ -31,6 +37,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

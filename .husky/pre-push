@@ -1,0 +1,3 @@
+# The hook that catches what lint cannot: a type error reaches the site only
+# because `main` deploys on push, so this is the last gate before it does.
+pnpm typecheck

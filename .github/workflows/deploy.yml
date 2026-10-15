@@ -15,6 +15,11 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
+# Git hooks guard a working copy, and CI has none. Installing them here would
+# only add a step that can fail for reasons the deploy does not care about.
+env:
+  HUSKY: 0
+
 jobs:
   build:
     runs-on: ubuntu-latest
