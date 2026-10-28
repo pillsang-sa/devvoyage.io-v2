@@ -108,11 +108,24 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="flex min-h-full flex-col">
+        {/* The first thing Tab reaches, so a keyboard user can pass the site
+            header on every page. Hidden until focused. */}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-20 focus:rounded-lg focus:bg-background focus:px-4 focus:py-2.5 focus:text-sm focus:font-medium focus:shadow-md focus:outline-2 focus:outline-accent"
+        >
+          본문으로 건너뛰기
+        </a>
         {/* Defines the `#person` and `#website` nodes that every other page's
             structured data points at, so they exist wherever a crawler lands. */}
         <JsonLd data={siteSchema()} />
         <SiteHeader />
-        <main className="flex-1">{children}</main>
+        {/* `tabIndex={-1}` lets the skip link move focus here, not just the
+            scroll position, so the next Tab continues inside the content.
+            `scroll-mt-20` clears the sticky header on the jump. */}
+        <main id="main" tabIndex={-1} className="flex-1 scroll-mt-20 outline-none">
+          {children}
+        </main>
         <footer className="border-t border-border">
           <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-4 py-8 text-sm text-muted sm:px-6">
             <span>© {new Date().getFullYear()} {SITE_NAME}</span>
