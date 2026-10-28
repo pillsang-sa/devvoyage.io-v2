@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { JsonLd } from "@/components/json-ld";
 import { SiteHeader } from "@/components/site-header";
 import { siteSchema } from "@/lib/schema";
@@ -16,9 +17,20 @@ import {
 } from "@/lib/site";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+/**
+ * Pretendard for all body text, Latin included. Geist only ever covered Latin,
+ * so Hangul fell through to whatever the OS had and the same page read
+ * differently on a Mac and a PC; one family also keeps the two scripts on the
+ * same weight and height inside a mixed sentence.
+ *
+ * The variable file carries every weight and every Hangul syllable in one
+ * download. It sits in `app/fonts/` rather than `public/` so the only copy
+ * that ships is the hashed one `next/font` emits.
+ */
+const pretendard = localFont({
+  src: "./fonts/PretendardVariable.woff2",
+  variable: "--font-pretendard",
+  weight: "45 920",
 });
 
 const geistMono = Geist_Mono({
@@ -90,7 +102,7 @@ export default function RootLayout({
       lang="ko"
       data-theme="light"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${pretendard.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
