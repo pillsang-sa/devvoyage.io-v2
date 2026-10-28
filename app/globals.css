@@ -130,6 +130,13 @@ body {
   overflow-wrap: break-word;
 }
 
+/* rehype-slug gives every heading an id, so a #fragment can land on one. The
+   sticky site header (h-11 + py-3, about 4.25rem) would cover it; leave room
+   for the header plus a little air. */
+.prose :where(h2, h3, h4) {
+  scroll-margin-top: 5rem;
+}
+
 /* ---------------------------------------------------------------------------
    Code blocks (rehype-pretty-code + Shiki)
    --------------------------------------------------------------------------- */
