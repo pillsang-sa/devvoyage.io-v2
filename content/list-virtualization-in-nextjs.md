@@ -9,7 +9,7 @@ author: PILLSANG SUNG
 
 ## 패키지 고르기
 
-![react-virtual, react-virtualized, react-virtuoso, react-window의 다운로드 추이와 stars · 갱신일 · install size 비교](/images/list-virtualization-in-nextjs/package-comparison.png)
+![react-virtual, react-virtualized, react-virtuoso, react-window의 다운로드 추이와 stars · 갱신일 · install size 비교](/images/list-virtualization-in-nextjs/package-comparison.avif)
 
 다운로드 수만 보면 [react-virtuoso](https://virtuoso.dev/)는 넷 중 가장 아래입니다. 그럼에도 고른 기준은 네 가지였습니다. 업데이트가 꾸준하고, 반응형을 자동으로 다뤄주고, install size가 253kB로 작고, 비슷한 UI에 적용한 회사 사례가 있었습니다.
 
@@ -19,7 +19,7 @@ author: PILLSANG SUNG
 
 가상화를 붙이기 전에 HTML 구조를 손봐야 했습니다. 기존 UI는 flex의 `wrap`과 `basis`/`grow`/`shrink`로 아이템을 흘려보내는 방식이라, **"행"이라는 단위가 DOM에 존재하지 않았습니다.** 가상화 라이브러리는 행 단위로 렌더링 여부를 판단하므로 이 상태로는 계산할 대상이 없습니다.
 
-![flex-wrap으로 흘려보내던 article들을 row 단위 div로 묶는 구조 변경](/images/list-virtualization-in-nextjs/markup-refactoring.jpg)
+![flex-wrap으로 흘려보내던 article들을 row 단위 div로 묶는 구조 변경](/images/list-virtualization-in-nextjs/markup-refactoring.avif)
 
 그래서 뷰포트 너비를 읽어 아이템을 직접 행으로 묶어 넘기기로 했습니다.
 

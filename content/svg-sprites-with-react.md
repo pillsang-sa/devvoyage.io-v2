@@ -10,7 +10,7 @@ React에서 SVG를 다룰 때 주로 SVGR로 아이콘 하나하나를 컴포넌
 
 다른 방법을 찾다가 네이버가 쓰는 방식을 보게 됐습니다. 서비스 아이콘 전체가 한 장의 이미지에 들어 있습니다.
 
-![네이버가 서비스 아이콘 전체를 한 장으로 합쳐둔 스프라이트 시트](/images/svg-sprites-with-react/naver-svg-sprites.png)
+![네이버가 서비스 아이콘 전체를 한 장으로 합쳐둔 스프라이트 시트](/images/svg-sprites-with-react/naver-svg-sprites.avif)
 
 낱개로 요청하면 수십 번 왕복해야 할 것을 한 번에 받아옵니다. SVG에도 같은 개념이 있습니다.
 
@@ -164,7 +164,7 @@ export const iconStyles = cva(["transition-all", "stroke-[0px]"], {
 
 실제 프로젝트에 적용해 보니 아이콘을 한 파일로 관리하게 된 것만으로도 리소스 측면에서 이득이 있었습니다. 다음에는 네이버가 하는 것처럼 아이콘을 아예 한 장의 래스터 이미지로 합치고 CSS 좌표로 잘라 쓰는 방식도 시도해 보고 싶습니다.
 
-![background-position으로 스프라이트에서 아이콘 한 칸만 잘라내는 CSS](/images/svg-sprites-with-react/naver-css.png)
+![background-position으로 스프라이트에서 아이콘 한 칸만 잘라내는 CSS](/images/svg-sprites-with-react/naver-css.avif)
 
 `background-position`으로 시트 안의 좌표를 지정해 아이콘 한 칸만 드러내는 방식입니다. 요청 수를 더 줄일 수 있지만, 좌표를 관리해야 하니 디자인 쪽과 규칙을 맞춰두는 게 먼저겠습니다.
 

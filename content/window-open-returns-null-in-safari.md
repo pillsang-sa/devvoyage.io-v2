@@ -9,13 +9,13 @@ author: PILLSANG SUNG
 
 Safari의 Block Pop-ups 설정이 켜져 있는 게 원인이었지만, 그것만으로는 설명이 되지 않았습니다. 같은 설정에서 어떤 버튼은 잘 열리고 어떤 버튼은 열리지 않았기 때문입니다. 둘을 가른 건 **클릭과 `window.open` 호출 사이에 비동기 작업이 끼어 있는지**였습니다.
 
-![Safari 설정의 Block Pop-ups 항목이 켜져 있는 화면](/images/window-open-returns-null-in-safari/cause.jpg)
+![Safari 설정의 Block Pop-ups 항목이 켜져 있는 화면](/images/window-open-returns-null-in-safari/cause.avif)
 
 ## 클릭은 한 번뿐이다
 
 문제가 된 코드는 버튼을 누르면 백엔드에서 URL을 받아온 뒤 그 값으로 창을 열고 있었습니다.
 
-![버튼 클릭 → 백엔드에서 url 응답 → window.open(url), 그런데 아무 일도 일어나지 않는다](/images/window-open-returns-null-in-safari/flow.png)
+![버튼 클릭 → 백엔드에서 url 응답 → window.open(url), 그런데 아무 일도 일어나지 않는다](/images/window-open-returns-null-in-safari/flow.avif)
 
 ```ts
 const openLink = (url: string) => {

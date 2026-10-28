@@ -11,7 +11,7 @@ JOIN은 관계형 데이터베이스에서 여러 테이블의 데이터를 결�
 
 ## 네 가지 JOIN
 
-![테이블 A와 B의 벤 다이어그램으로 나타낸 INNER, LEFT, RIGHT, FULL OUTER JOIN의 결과 범위](/images/mysql-join-guide/diagram.png)
+![테이블 A와 B의 벤 다이어그램으로 나타낸 INNER, LEFT, RIGHT, FULL OUTER JOIN의 결과 범위](/images/mysql-join-guide/diagram.avif)
 
 | 종류 | 남는 것 | 빈 자리 |
 | --- | --- | --- |
