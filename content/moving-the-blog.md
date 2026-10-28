@@ -2,7 +2,7 @@
 title: 블로그를 이전하며
 summary: 정적 블로그에는 Astro가 더 맞는 도구입니다. 그럼에도 Next.js로 옮긴 이유와, 그 대가로 지불하고 있는 184KB에 대하여.
 publishedAt: 2026-08-04
-updatedAt: 2026-09-11
+updatedAt: 2026-10-28
 author: PILLSANG SUNG
 ---
 
@@ -222,4 +222,4 @@ import { dockerfileSnippet } from "./snippets/dockerfile";
 
 ## 남은 것들
 
-태그, 페이지네이션, RSS, 목차는 아직 없습니다. 필요해지면 그때 붙이면 됩니다. 지금은 글을 쓰는 게 먼저입니다.
+RSS는 그사이 붙였습니다. 태그, 페이지네이션, 목차는 아직 없습니다. 필요해지면 그때 붙이면 됩니다. 지금은 글을 쓰는 게 먼저입니다.
