@@ -290,6 +290,7 @@ export default function PortfolioPage() {
                         >
                           ↗
                         </span>
+                        <span className="sr-only">(새 탭)</span>
                       </a>
                     ) : null}
 

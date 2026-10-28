@@ -56,6 +56,10 @@ const components: Components = {
       return (
         <a {...rest} href={href} target="_blank" rel="noopener noreferrer">
           {children}
+          {/* The word joiner keeps the arrow on the same line as the last
+              word of the link instead of wrapping on its own. */}
+          <span aria-hidden="true">{"\u2060↗"}</span>
+          <span className="sr-only">(새 탭)</span>
         </a>
       );
     }
