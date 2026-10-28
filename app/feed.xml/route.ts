@@ -1,4 +1,5 @@
-import { getAllPosts } from "@/lib/posts";
+import { renderFeedHtml } from "@/lib/feed-html";
+import { getAllPostsWithContent } from "@/lib/posts";
 import {
   SITE_AUTHOR,
   SITE_DESCRIPTION,
@@ -22,16 +23,38 @@ function escapeXml(value: string): string {
     .replace(/'/g, "&apos;");
 }
 
+/**
+ * HTML goes in as CDATA so it needs no entity escaping. The one sequence
+ * CDATA cannot hold is its own terminator, which a code sample could contain,
+ * so split it across two sections.
+ */
+function cdata(value: string): string {
+  return `<![CDATA[${value.replace(/]]>/g, "]]]]><![CDATA[>")}]]>`;
+}
+
 /** RSS wants RFC 822 dates; `toUTCString` emits exactly that shape. */
 function toRfc822(isoDate: string): string {
   return new Date(`${isoDate}T00:00:00Z`).toUTCString();
 }
 
-export function GET(): Response {
-  const posts = getAllPosts();
+/**
+ * Each item carries the whole post in `<content:encoded>`: there are no ads
+ * or analytics here that a click-through would serve, and a subscriber who
+ * chose a reader wants to read in it. `<description>` keeps the summary for
+ * readers that list items before opening one.
+ */
+export async function GET(): Promise<Response> {
+  const entries = getAllPostsWithContent();
+  const posts = entries.map((entry) => entry.meta);
+
+  const rendered = await Promise.all(
+    entries.map(({ meta, content }) =>
+      renderFeedHtml(content, absoluteUrl(`/blog/${meta.slug}`)),
+    ),
+  );
 
   const items = posts
-    .map((post) => {
+    .map((post, index) => {
       const url = absoluteUrl(`/blog/${post.slug}`);
 
       return `    <item>
@@ -40,7 +63,8 @@ export function GET(): Response {
       <guid isPermaLink="true">${escapeXml(url)}</guid>
       <pubDate>${toRfc822(post.publishedAt)}</pubDate>
       <dc:creator>${escapeXml(post.author)}</dc:creator>
-${post.summary ? `      <description>${escapeXml(post.summary)}</description>\n` : ""}    </item>`;
+${post.summary ? `      <description>${escapeXml(post.summary)}</description>\n` : ""}      <content:encoded>${cdata(rendered[index])}</content:encoded>
+    </item>`;
     })
     .join("\n");
 
@@ -52,7 +76,7 @@ ${post.summary ? `      <description>${escapeXml(post.summary)}</description>\n`
     : undefined;
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>${escapeXml(SITE_NAME)}</title>
     <link>${escapeXml(absoluteUrl("/blog"))}</link>

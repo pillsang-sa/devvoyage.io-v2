@@ -119,6 +119,11 @@ export function getAllPosts(): PostMeta[] {
   return readAllPosts().map((post) => post.meta);
 }
 
+/** Like `getAllPosts`, with each post's markdown body. */
+export function getAllPostsWithContent(): Post[] {
+  return readAllPosts();
+}
+
 export function getAllSlugs(): string[] {
   return readAllPosts().map((post) => post.meta.slug);
 }
