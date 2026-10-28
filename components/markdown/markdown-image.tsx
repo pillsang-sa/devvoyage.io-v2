@@ -47,8 +47,14 @@ export function MarkdownImage({ src, alt, loading, node: _node, ...rest }: Props
         decoding="async"
         className="h-auto w-full rounded-lg border border-border"
       />
+      {/* The caption repeats `alt` word for word. A screen reader has already
+          read it off the <img>, so hiding the caption keeps it from being
+          announced twice; sighted readers still see it. */}
       {alt ? (
-        <figcaption className="mt-3 text-center text-sm text-muted">
+        <figcaption
+          aria-hidden="true"
+          className="mt-3 text-center text-sm text-muted"
+        >
           {alt}
         </figcaption>
       ) : null}
