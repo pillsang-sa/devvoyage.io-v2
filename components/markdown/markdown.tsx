@@ -4,6 +4,7 @@ import rehypePrettyCode, { type Options as PrettyCodeOptions } from "rehype-pret
 import rehypeSlug from "rehype-slug";
 import rehypeUnwrapImages from "rehype-unwrap-images";
 import remarkGfm from "remark-gfm";
+import { CopyButton } from "./copy-button";
 import { MarkdownImage } from "./markdown-image";
 
 type HastNode = {
@@ -63,6 +64,29 @@ const components: Components = {
       <Link {...rest} href={href}>
         {children}
       </Link>
+    );
+  },
+
+  // Only fenced blocks reach here as <pre>, already highlighted by
+  // rehype-pretty-code, which records the fence's language on the element.
+  // The toolbar sits outside the <pre> so it stays put while long lines
+  // scroll sideways underneath it.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- see `a` above
+  pre({ children, node: _node, ...rest }) {
+    const language = (rest as Record<string, unknown>)["data-language"];
+
+    return (
+      <div data-code-block="" className="relative">
+        <pre {...rest}>{children}</pre>
+        <div className="absolute top-2 right-2 flex items-center gap-1">
+          {typeof language === "string" ? (
+            <span className="px-1.5 font-mono text-xs text-muted select-none">
+              {language}
+            </span>
+          ) : null}
+          <CopyButton />
+        </div>
+      </div>
     );
   },
 

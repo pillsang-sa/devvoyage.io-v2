@@ -157,6 +157,12 @@ body {
   }
 }
 
+/* Room at the top for the language label and copy button, which sit over
+   the block (see the `pre` component in markdown.tsx). */
+.prose [data-code-block] pre {
+  padding-top: 2.75rem;
+}
+
 .prose pre code {
   display: grid; /* one row per line, so lines can be highlighted individually */
   background: none;
@@ -209,7 +215,7 @@ code[data-theme*=" "] span {
   color: var(--muted);
 }
 
-.prose [data-rehype-pretty-code-title] + pre {
+.prose [data-rehype-pretty-code-title] + [data-code-block] pre {
   margin-top: 0;
   border-radius: 0 0 0.5rem 0.5rem;
 }
