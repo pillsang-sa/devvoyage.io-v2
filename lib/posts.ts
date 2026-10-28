@@ -100,3 +100,16 @@ export function getAllSlugs(): string[] {
 export function getPost(slug: string): Post | undefined {
   return readAllPosts().find((post) => post.meta.slug === slug);
 }
+
+/** The posts published just before and just after this one, if any. */
+export function getAdjacentPosts(slug: string): {
+  older?: PostMeta;
+  newer?: PostMeta;
+} {
+  const posts = getAllPosts();
+  const index = posts.findIndex((post) => post.slug === slug);
+  if (index === -1) return {};
+
+  // Newest first, so the older post is the next one down the list.
+  return { older: posts[index + 1], newer: posts[index - 1] };
+}

@@ -3,9 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/json-ld";
 import { Markdown } from "@/components/markdown/markdown";
+import { PostPager } from "@/components/post-pager";
+import { TableOfContents } from "@/components/table-of-contents";
 import { formatDate } from "@/lib/format";
-import { getAllSlugs, getPost } from "@/lib/posts";
+import { getAdjacentPosts, getAllSlugs, getPost } from "@/lib/posts";
 import { blogPostSchema } from "@/lib/schema";
+import { getHeadings } from "@/lib/toc";
 import {
   OG_IMAGE,
   SITE_LOCALE,
@@ -16,6 +19,9 @@ import {
 
 // A static export cannot render slugs that were not known at build time.
 export const dynamicParams = false;
+
+/** Below this, a list of sections tells the reader nothing a glance would not. */
+const MIN_TOC_HEADINGS = 3;
 
 export function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
@@ -62,6 +68,9 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
   if (!post) notFound();
 
   const { meta, content } = post;
+  const headings = getHeadings(content);
+  const showToc = headings.length >= MIN_TOC_HEADINGS;
+  const { older, newer } = getAdjacentPosts(slug);
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
@@ -87,15 +96,51 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
           </div>
         </header>
 
-        <div className="prose prose-neutral max-w-none md:prose-lg">
-          <Markdown>{content}</Markdown>
+        {/* Below xl there is no room beside the column, so the contents sit
+            above the body, folded so they do not push the first paragraph
+            off the screen. */}
+        {showToc ? (
+          <details className="mb-10 rounded-xl border border-border px-5 py-4 xl:hidden">
+            <summary className="cursor-pointer text-sm font-semibold">
+              목차
+            </summary>
+            <nav aria-label="목차" className="mt-4">
+              <TableOfContents headings={headings} />
+            </nav>
+          </details>
+        ) : null}
+
+        <div className="relative">
+          {/* Hung in the right margin, outside the 3xl column, so the body
+              keeps its measure. At xl the margin is wide enough for it. */}
+          {showToc ? (
+            <aside className="absolute top-0 left-full ml-10 hidden h-full w-48 xl:block">
+              <nav
+                aria-label="목차"
+                className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto"
+              >
+                <p className="mb-3 font-mono text-xs font-semibold tracking-widest text-muted">
+                  목차
+                </p>
+                <TableOfContents headings={headings} />
+              </nav>
+            </aside>
+          ) : null}
+
+          <div className="prose prose-neutral max-w-none md:prose-lg">
+            <Markdown>{content}</Markdown>
+          </div>
         </div>
       </article>
 
-      <nav className="mt-16 border-t border-border pt-8">
+      <nav
+        aria-label="다른 글"
+        className="mt-16 flex flex-col gap-6 border-t border-border pt-8"
+      >
+        <PostPager older={older} newer={newer} />
         <Link
           href="/blog"
-          className="inline-flex h-11 items-center rounded-lg text-sm font-medium text-muted transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="inline-flex h-11 items-center self-start rounded-lg text-sm font-medium text-muted transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           ← 목록으로
         </Link>
