@@ -13,3 +13,7 @@ const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
 export function formatDate(iso: string): string {
   return dateFormatter.format(new Date(`${iso}T00:00:00Z`));
 }
+
+export function formatReadingTime(minutes: number): string {
+  return `${minutes}분 분량`;
+}

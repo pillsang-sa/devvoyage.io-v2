@@ -5,7 +5,7 @@ import { JsonLd } from "@/components/json-ld";
 import { Markdown } from "@/components/markdown/markdown";
 import { PostPager } from "@/components/post-pager";
 import { TableOfContents } from "@/components/table-of-contents";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatReadingTime } from "@/lib/format";
 import { getAdjacentPosts, getAllSlugs, getPost } from "@/lib/posts";
 import { blogPostSchema } from "@/lib/schema";
 import { getHeadings } from "@/lib/toc";
@@ -93,6 +93,8 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
                 </span>
               </>
             ) : null}
+            <span aria-hidden="true">·</span>
+            <span>{formatReadingTime(meta.readingMinutes)}</span>
           </div>
         </header>
 

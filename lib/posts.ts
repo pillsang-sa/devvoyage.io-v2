@@ -16,6 +16,8 @@ export type PostMeta = {
   /** ISO date, `YYYY-MM-DD`. Absent when the post was never revised. */
   updatedAt?: string;
   draft: boolean;
+  /** Whole minutes, at least 1. See `readingMinutes`. */
+  readingMinutes: number;
 };
 
 export type Post = {
@@ -40,6 +42,29 @@ function toDateString(value: unknown, file: string, field: string): string {
     return parsed.toISOString().slice(0, 10);
   }
   throw new Error(`${file}: \`${field}\` must be a date (YYYY-MM-DD)`);
+}
+
+/** Roughly what an adult reads silently: Hangul syllables, Latin words. */
+const HANGUL_PER_MINUTE = 500;
+const WORDS_PER_MINUTE = 200;
+
+/**
+ * Hangul and Latin are counted apart because one syllable and one word are
+ * very different amounts of reading. Code is counted too, token by token at
+ * the word rate: in a post that is half code, the code is half the reading,
+ * and leaving it out ranked a 250-line walkthrough alongside a 50-line note.
+ * Link and image targets are dropped — they are syntax, not text anyone reads.
+ */
+function readingMinutes(markdown: string): number {
+  const text = markdown.replace(/\]\([^)]*\)/g, "]");
+
+  const syllables = text.match(/[\uAC00-\uD7A3]/g)?.length ?? 0;
+  const words = text.match(/[A-Za-z0-9_]+/g)?.length ?? 0;
+
+  return Math.max(
+    1,
+    Math.round(syllables / HANGUL_PER_MINUTE + words / WORDS_PER_MINUTE),
+  );
 }
 
 function readPost(fileName: string): Post {
@@ -73,6 +98,7 @@ function readPost(fileName: string): Post {
       // A same-day `updatedAt` carries no information, so drop it.
       updatedAt: updatedAt === publishedAt ? undefined : updatedAt,
       draft: data.draft === true,
+      readingMinutes: readingMinutes(content),
     },
     content,
   };
