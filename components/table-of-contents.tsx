@@ -10,7 +10,7 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
   return (
     <ol className="space-y-2 text-sm leading-snug">
       {headings.map(({ id, text, level }) => (
-        <li key={id} className={level === 3 ? "pl-4" : undefined}>
+        <li key={id} className={level === 3 ? "ps-4" : undefined}>
           <a
             href={`#${id}`}
             className="rounded-sm text-muted transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"

@@ -11,7 +11,16 @@ export function ThemeToggle() {
   function toggle() {
     const root = document.documentElement;
     const next = root.dataset.theme === "dark" ? "light" : "dark";
+
+    // Hold every transition for the swap, so links and buttons change color in
+    // the same frame as the background instead of trailing behind it.
+    const freeze = document.createElement("style");
+    freeze.textContent = "*,*::before,*::after{transition:none!important}";
+    document.head.append(freeze);
     root.dataset.theme = next;
+    void getComputedStyle(root).color; // Flushes styles while transitions are off.
+    requestAnimationFrame(() => freeze.remove());
+
     try {
       localStorage.setItem("theme", next);
     } catch {
@@ -33,7 +42,7 @@ export function ThemeToggle() {
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="1.75"
+        strokeWidth="2.4"
         strokeLinecap="round"
         className="hidden size-5 dark:block"
       >
@@ -46,7 +55,7 @@ export function ThemeToggle() {
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="1.75"
+        strokeWidth="2.4"
         strokeLinecap="round"
         strokeLinejoin="round"
         className="size-5 dark:hidden"

@@ -116,10 +116,10 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
           {/* Hung in the right margin, outside the 3xl column, so the body
               keeps its measure. At xl the margin is wide enough for it. */}
           {showToc ? (
-            <aside className="absolute top-0 left-full ml-10 hidden h-full w-48 xl:block">
+            <aside className="absolute start-full top-0 ms-10 hidden h-full w-48 xl:block">
               <nav
                 aria-label="목차"
-                className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto"
+                className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto overscroll-contain"
               >
                 <p className="mb-3 font-mono text-xs font-semibold tracking-widest text-muted">
                   목차

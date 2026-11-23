@@ -7,7 +7,7 @@ type Status = "idle" | "copied" | "failed";
 const LABEL: Record<Status, string> = {
   idle: "복사",
   copied: "복사됨",
-  failed: "복사 실패",
+  failed: "복사 실패. 직접 선택해 주세요",
 };
 
 /**
@@ -15,12 +15,14 @@ const LABEL: Record<Status, string> = {
  * a prop would serialize every snippet a second time into the RSC payload,
  * while the text is already sitting in the DOM next to the button.
  */
-export function CopyButton() {
+export function CopyButton({ language }: { language?: string }) {
   const ref = useRef<HTMLButtonElement>(null);
   const [status, setStatus] = useState<Status>("idle");
 
+  // Only success clears itself. A failure stays, because it tells the reader
+  // what to do next.
   useEffect(() => {
-    if (status === "idle") return;
+    if (status !== "copied") return;
     const timer = setTimeout(() => setStatus("idle"), 2000);
     return () => clearTimeout(timer);
   }, [status]);
@@ -45,6 +47,11 @@ export function CopyButton() {
       ref={ref}
       type="button"
       onClick={copy}
+      aria-label={
+        status === "idle"
+          ? `${LABEL.idle}: ${language ? `${language} ` : ""}코드 블록`
+          : undefined
+      }
       aria-live="polite"
       className="rounded-md px-1.5 py-0.5 font-mono text-xs text-muted transition-colors hover:bg-background hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >

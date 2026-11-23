@@ -35,7 +35,7 @@ function PagerLink({
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className={`group flex flex-col gap-1.5 rounded-xl border border-border p-5 transition-colors hover:border-accent hover:bg-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${alignEnd ? "sm:text-right" : ""}`}
+      className={`group flex flex-col gap-1.5 rounded-xl border border-border p-5 transition-colors hover:border-accent hover:bg-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${alignEnd ? "sm:text-end" : ""}`}
     >
       <span className="font-mono text-xs text-muted">{label}</span>
       <span className="font-semibold tracking-tight text-balance group-hover:text-accent">

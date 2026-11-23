@@ -37,7 +37,9 @@ function rehypeEagerFirstImage() {
 }
 
 const prettyCodeOptions: PrettyCodeOptions = {
-  theme: { light: "github-light", dark: "github-dark-dimmed" },
+  // The high-contrast light theme: plain github-light has keyword, string and
+  // constant colors below 4.5:1 on `--code-bg`.
+  theme: { light: "github-light-high-contrast", dark: "github-dark-dimmed" },
   // Backgrounds come from our own theme variables so code blocks match the page.
   keepBackground: false,
 };
@@ -82,13 +84,15 @@ const components: Components = {
     return (
       <div data-code-block="" className="relative">
         <pre {...rest}>{children}</pre>
-        <div className="absolute top-2 right-2 flex items-center gap-1">
+        <div className="absolute end-2 top-2 flex items-center gap-1">
           {typeof language === "string" ? (
             <span className="px-1.5 font-mono text-xs text-muted select-none">
               {language}
             </span>
           ) : null}
-          <CopyButton />
+          <CopyButton
+            language={typeof language === "string" ? language : undefined}
+          />
         </div>
       </div>
     );

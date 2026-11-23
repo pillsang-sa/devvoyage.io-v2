@@ -92,10 +92,10 @@ const cases: CaseStudy[] = [
         "느린 섹션은 자기 자리만 늦게 채우고, 서버에서 받은 값은 브라우저에서 다시 받지 않습니다.",
     },
     problem:
-      "페이지 본체에서 데이터를 await하면 셸이 가장 느린 응답까지 막혔습니다. 광고 목록처럼 느린 API가 있는 화면은 처음부터 끝까지 빈 화면이었고, 이미 채워진 데이터가 hydrate되면서 섹션별 스켈레톤도 전부 사라졌습니다.",
+      "페이지 본체에서 데이터를 await하면 셸이 가장 느린 응답까지 막혔습니다. 광고 목록처럼 느린 API가 있는 화면은 처음부터 끝까지 빈 화면이었고, 이미 채워진 데이터가 하이드레이션되면서 섹션별 스켈레톤도 전부 사라졌습니다.",
     solution: [
       "prefetch를 섹션별 Suspense 경계 안으로 내려 경계마다 자기 쿼리만 기다리게 했습니다. loading.tsx는 세그먼트 전체를 fallback 하나로 덮을 뿐이라 기각했고, 공통 데이터를 layout에서 await하는 안은 그룹 안 모든 페이지의 첫 응답에 API 왕복이 하나씩 붙어 기각했습니다.",
-      "그 뒤 홈의 쿼리 10개 중 3개가 서버에서 받은 값을 보여준 직후 같은 요청을 다시 보내고 있었습니다. staleTime이 없어 기본값 0이었던 것, 0으로 지정돼 있던 것, refetchOnMount: 'always'가 staleTime을 무시한 것으로 원인이 셋 다 달랐습니다. '다시 들어오면 새로 받는다'는 동작은 홈을 떠날 때 무효화하는 방식으로 옮겼습니다.",
+      "그 뒤 홈의 쿼리 10개 중 3개가 서버에서 받은 값을 보여준 직후 같은 요청을 다시 보내고 있었습니다. staleTime이 없어 기본값 0이었던 것, 0으로 지정돼 있던 것, refetchOnMount: 'always'가 staleTime을 무시한 것으로 원인이 셋 다 달랐습니다. ‘다시 들어오면 새로 받는다’는 동작은 홈을 떠날 때 무효화하는 방식으로 옮겼습니다.",
     ],
     results: [
       "적용 화면 4개 (홈 · 광고 목록 · 스토어 2종)",
@@ -182,9 +182,9 @@ const cases: CaseStudy[] = [
         "구역은 보여주는 단위이고, 상한은 기기마다 셉니다. 한 기기가 보는 후보가 늘 10건입니다.",
     },
     problem:
-      "노출 중인 광고만 세다 보니 대기 중이던 광고가 시작되는 순간 11번째가 생겼습니다. 공용 광고를 넣으려 하면 '슬롯이 모두 찼습니다'만 떠서, iOS 칸이 비어 있는데 왜 막히는지 운영자가 알 수 없었습니다.",
+      "노출 중인 광고만 세다 보니 대기 중이던 광고가 시작되는 순간 11번째가 생겼습니다. 공용 광고를 넣으려 하면 ‘슬롯이 모두 찼습니다’만 떠서, iOS 칸이 비어 있는데 왜 막히는지 운영자가 알 수 없었습니다.",
     solution: [
-      "기획의 '10건을 세팅하면 4건이 나간다'를 한 기기가 보는 후보가 10건이라는 뜻으로 읽고, 등록 자체를 기기별 10칸으로 묶었습니다. 전체를 10행으로 묶는 안은 기각했습니다. 공용 4 · iOS 전용 3 · Android 전용 3으로 채우면 iOS 기기의 후보는 7건인데, 송출은 등록 광고가 4건에 못 미칠 때만 채우므로 이 부족이 드러나지 않습니다. 상한을 OS별로 고정 배분하는 안도 송출 가능한 광고의 93%가 공용이라 공용 몫만 깎여 기각했습니다.",
+      "기획의 ‘10건을 세팅하면 4건이 나간다’를 한 기기가 보는 후보가 10건이라는 뜻으로 읽고, 등록 자체를 기기별 10칸으로 묶었습니다. 전체를 10행으로 묶는 안은 기각했습니다. 공용 4 · iOS 전용 3 · Android 전용 3으로 채우면 iOS 기기의 후보는 7건인데, 송출은 등록 광고가 4건에 못 미칠 때만 채우므로 이 부족이 드러나지 않습니다. 상한을 OS별로 고정 배분하는 안도 송출 가능한 광고의 93%가 공용이라 공용 몫만 깎여 기각했습니다.",
       "보드는 공용 · Android 전용 · iOS 전용 세 구역으로 보여주고, 공용이 막히면 어느 칸을 비우면 되는지 화면이 알려주게 했습니다. 송출 API에서는 유저 OS · 참여 여부 · 매체가 허용한 카테고리로 거른 뒤 4건을 고르고, 모자라면 전체 광고로 채웠습니다.",
     ],
     results: [
@@ -346,15 +346,10 @@ function ExternalLink({ href }: { href: string }) {
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="group inline-flex items-center gap-1 rounded-md font-mono text-xs text-muted transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="inline-flex items-center gap-1 rounded-md font-mono text-xs text-muted transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       {new URL(href).host}
-      <span
-        aria-hidden="true"
-        className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-      >
-        ↗
-      </span>
+      <span aria-hidden="true">↗</span>
       <span className="sr-only">(새 탭)</span>
     </a>
   );
@@ -393,26 +388,26 @@ export default function PortfolioPage() {
         {cases.map((study, index) => (
           <li key={study.title}>
             <article aria-labelledby={`case-${index + 1}`}>
-              <div
-                data-reveal=""
-                className="border-b-2 border-foreground pb-3"
-              >
+              <div data-reveal="">
                 <p className="font-mono text-xs text-muted">
-                  <span className="mr-2 text-sm text-accent">
+                  <span className="me-2 text-sm text-accent">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   {study.project}
                 </p>
                 <h2
                   id={`case-${index + 1}`}
-                  className="mt-2 text-lg font-bold leading-snug tracking-tight sm:text-xl"
+                  className="mt-2 scroll-mt-28 text-lg font-bold leading-snug tracking-tight sm:text-xl"
                 >
                   {study.title}
                 </h2>
               </div>
 
-              <div data-reveal="">
-                <p className="mt-3 font-mono text-xs leading-relaxed text-muted">
+              <div
+                data-reveal=""
+                className="mt-2 border-b-2 border-foreground pb-3"
+              >
+                <p className="font-mono text-xs leading-relaxed text-muted">
                   {study.meta}
                 </p>
                 {study.url ? (
@@ -432,7 +427,7 @@ export default function PortfolioPage() {
 
               <div
                 data-reveal=""
-                className="mt-8 space-y-6 text-sm leading-relaxed text-muted sm:text-[15px]"
+                className="mt-8 space-y-6 text-base leading-relaxed text-muted"
               >
                 <section>
                   <PartLabel>문제</PartLabel>
@@ -464,7 +459,7 @@ export default function PortfolioPage() {
               {study.openIssue ? (
                 <aside
                   data-reveal=""
-                  className="mt-8 rounded-lg border border-dashed border-border p-4 sm:p-5"
+                  className="mt-8 rounded-xl border border-dashed border-border p-4 sm:p-5"
                 >
                   <h3 className="text-sm font-semibold">아직 풀지 못한 것</h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted">

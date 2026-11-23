@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SiteNavLink } from "./site-nav-link";
 import { ThemeToggle } from "./theme-toggle";
 
 const links = [
@@ -19,13 +20,7 @@ export function SiteHeader() {
 
         <nav className="flex items-center gap-1">
           {links.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className="grid h-11 place-items-center rounded-lg px-2.5 text-sm font-medium text-muted transition-colors hover:bg-subtle hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:px-3"
-            >
-              {label}
-            </Link>
+            <SiteNavLink key={href} href={href} label={label} />
           ))}
           <ThemeToggle />
         </nav>

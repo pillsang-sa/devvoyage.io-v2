@@ -30,7 +30,7 @@ export default function Home() {
           <Link
             key={href}
             href={href}
-            className="group flex flex-col justify-between gap-8 rounded-2xl border border-border p-6 transition-colors hover:border-accent hover:bg-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:p-7"
+            className="group flex flex-col justify-between gap-8 rounded-xl border border-border p-6 transition-colors hover:border-accent hover:bg-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:p-7"
           >
             <div>
               <h2 className="font-mono text-sm font-semibold tracking-widest group-hover:text-accent">
@@ -42,7 +42,7 @@ export default function Home() {
             </div>
             <span
               aria-hidden="true"
-              className="text-lg text-muted transition-transform group-hover:translate-x-1 group-hover:text-accent"
+              className="text-lg text-muted transition-colors group-hover:text-accent"
             >
               →
             </span>

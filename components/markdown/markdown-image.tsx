@@ -45,7 +45,7 @@ export function MarkdownImage({ src, alt, loading, node: _node, ...rest }: Props
         // "eager" only on the first image of a post; see `rehypeEagerFirstImage`.
         loading={loading ?? "lazy"}
         decoding="async"
-        className="h-auto w-full rounded-lg border border-border"
+        className="h-auto w-full rounded-lg outline -outline-offset-1 outline-black/10 dark:outline-white/10"
       />
       {/* The caption repeats `alt` word for word. A screen reader has already
           read it off the <img>, so hiding the caption keeps it from being
