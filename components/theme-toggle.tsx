@@ -1,5 +1,35 @@
 "use client";
 
+import { useEffect } from "react";
+
+/* The server can only offer one color per OS preference, so once the page runs
+   both tags take the background of the theme actually showing. */
+function syncThemeColor() {
+  const color = getComputedStyle(document.documentElement)
+    .getPropertyValue("--background")
+    .trim();
+  document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
+    // The guard keeps the observer below from re-firing on its own write.
+    if (meta.getAttribute("content") !== color) {
+      meta.setAttribute("content", color);
+    }
+  });
+}
+
+/* Client navigation re-renders the viewport metadata back to its server values,
+   so watch <head> rather than syncing only once. */
+function watchThemeColor() {
+  syncThemeColor();
+  const observer = new MutationObserver(syncThemeColor);
+  observer.observe(document.head, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["content"],
+  });
+  return () => observer.disconnect();
+}
+
 /**
  * The single source of truth for the theme is the `data-theme` attribute on
  * `<html>`, set before first paint by the inline script in the root layout.
@@ -8,6 +38,8 @@
  * which of the two icons is visible.
  */
 export function ThemeToggle() {
+  useEffect(watchThemeColor, []);
+
   function toggle() {
     const root = document.documentElement;
     const next = root.dataset.theme === "dark" ? "light" : "dark";
@@ -20,6 +52,7 @@ export function ThemeToggle() {
     root.dataset.theme = next;
     void getComputedStyle(root).color; // Flushes styles while transitions are off.
     requestAnimationFrame(() => freeze.remove());
+    syncThemeColor();
 
     try {
       localStorage.setItem("theme", next);

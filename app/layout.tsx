@@ -75,8 +75,8 @@ export const metadata: Metadata = {
 
 /**
  * Tints the mobile browser's address bar to match the page. Mirrors
- * `--background` in globals.css; it follows the OS preference, since a meta
- * tag cannot see the `data-theme` a visitor picked with the toggle.
+ * `--background` in globals.css. These follow the OS preference until the
+ * page runs; `ThemeToggle` then syncs them to the theme the visitor picked.
  */
 export const viewport: Viewport = {
   themeColor: [

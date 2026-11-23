@@ -9,21 +9,26 @@
 
 :root,
 [data-theme="light"] {
+  /* Native scrollbars and disclosure markers follow the chosen theme. */
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
   --muted: #5f6368;
   --subtle: #f3f4f6;
   --border: #e5e7eb;
+  --border-strong: var(--foreground);
   --accent: #2563eb;
   --code-bg: #f6f8fa;
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --background: #0a0a0a;
   --foreground: #ededed;
   --muted: #9ca3af;
   --subtle: #1c1c1f;
   --border: #272729;
+  --border-strong: var(--foreground);
   --accent: #7aa2f7;
   --code-bg: #16181d;
 }
@@ -34,6 +39,7 @@
   --color-muted: var(--muted);
   --color-subtle: var(--subtle);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-accent: var(--accent);
   --font-sans: var(--font-pretendard);
   /* Geist Mono has no Hangul, so the Korean in mono labels (dates, "이전 글")

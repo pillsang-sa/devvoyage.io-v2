@@ -405,7 +405,7 @@ export default function PortfolioPage() {
 
               <div
                 data-reveal=""
-                className="mt-2 border-b-2 border-foreground pb-3"
+                className="mt-2 border-b-2 border-border-strong pb-3"
               >
                 <p className="font-mono text-xs leading-relaxed text-muted">
                   {study.meta}
